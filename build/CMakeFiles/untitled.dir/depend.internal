@@ -3,7 +3,9 @@
 
 CMakeFiles/untitled.dir/src/main.cpp.o
  /home/dan/GitHub/ImageProcessing/inc/image_core.hpp
+ /home/dan/GitHub/ImageProcessing/inc/image_processing.hpp
  /home/dan/GitHub/ImageProcessing/src/image_core.cpp
+ /home/dan/GitHub/ImageProcessing/src/image_processing.cpp
  /home/dan/GitHub/ImageProcessing/src/main.cpp
  /installation/OpenCV-/include/opencv4/opencv2/core.hpp
  /installation/OpenCV-/include/opencv4/opencv2/core/base.hpp
@@ -36,5 +38,7 @@ CMakeFiles/untitled.dir/src/main.cpp.o
  /installation/OpenCV-/include/opencv4/opencv2/core/vsx_utils.hpp
  /installation/OpenCV-/include/opencv4/opencv2/highgui.hpp
  /installation/OpenCV-/include/opencv4/opencv2/imgcodecs.hpp
+ /installation/OpenCV-/include/opencv4/opencv2/imgproc.hpp
  /installation/OpenCV-/include/opencv4/opencv2/opencv_modules.hpp
+ /installation/OpenCV-/include/opencv4/opencv2/photo.hpp
  /installation/OpenCV-/include/opencv4/opencv2/videoio.hpp
