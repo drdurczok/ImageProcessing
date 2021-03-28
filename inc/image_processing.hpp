@@ -10,7 +10,7 @@ using namespace cv;
 
 class image_processing {
   public:
-    enum edge_filter_methods{SOBEL};
+    enum edge_filter_methods{SOBEL,FLOOR_PIXELS,CEILING_PIXELS};
 
     image_processing();
     Mat filter(Mat);
@@ -18,8 +18,16 @@ class image_processing {
 
     Mat ellipse_detection(Mat);
 
+    Mat position_detection(Mat);
+
   private:
-    Mat sobel_edge_detection(Mat);
+    Mat sobelEdgeDetection(Mat);
+    Mat getFloorPixels(Mat);
+    Mat getCeilingPixels(Mat);
+
+    float verifyCircle(Mat, Point2f, float);
+    void getCircle(Point2f&, Point2f&, Point2f&, Point2f&, float&);
+    vector<Point2f> getCirclePoints(Mat binaryImage);
 
 
 };
