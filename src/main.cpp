@@ -24,6 +24,17 @@ int main(){
    	img_core.display_image(2, img_circles);
 
 
+   	Point2f center[2];
+   	float radius[2];
+   	center[0] = img_proc.getCircleCenter(0);
+   	center[1] = img_proc.getCircleCenter(1);
+   	radius[0] = img_proc.getCircleRadius(0);
+   	radius[1] = img_proc.getCircleRadius(1);
+
+    for (uint i = 0; i < sizeof(radius)/sizeof(*radius); i++){
+    	cout << "circle " << i << " with center: " << center[i] << " radius: " << radius[i] << endl;
+	}
+	
     waitKey(0); // Wait for a keystroke in the window
     return 0;
 }

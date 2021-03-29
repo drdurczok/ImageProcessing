@@ -1,6 +1,33 @@
 #include "../inc/image_processing.hpp"
 
-image_processing::image_processing(){}
+image_processing::image_processing(){
+	center[0] = Point2f(0,0);
+	center[1] = Point2f(0,0);
+	radius[0] = 0;
+	radius[1] = 0;
+}
+
+Point2f image_processing::getCircleCenter(uint i){
+	if (i < sizeof(center)/sizeof(*center)){
+		return center[i];
+	}
+	else{
+		cout << "ERROR: Entered index for non-existant circle" << endl;
+	}
+
+	return Point2f(0,0);
+}
+
+float image_processing::getCircleRadius(uint i){
+	if (i < sizeof(radius)/sizeof(*radius)){
+		return radius[i];
+	}
+	else{
+		cout << "ERROR: Entered index for non-existant circle" << endl;
+	}
+
+	return 0;
+}
 
 Mat image_processing::filter(Mat input){
 	if (input.empty()){
@@ -127,17 +154,17 @@ Mat image_processing::position_detection(Mat img){
 	Mat mask, circle_bottom, circle_top;
 	
 	mask = this->find_edge(img, FLOOR_PIXELS);
-	circle_bottom = ellipse_detection(mask);
+	circle_bottom = ellipse_detection(mask, center[0], radius[0]);
 
 	mask = this->find_edge(img, CEILING_PIXELS);
-	circle_top = ellipse_detection(mask);
+	circle_top = ellipse_detection(mask, center[1], radius[1]);
 
 	Mat circle = circle_bottom + circle_top;
 
 	return circle;
 }
 
-Mat image_processing::ellipse_detection(Mat mask){
+Mat image_processing::ellipse_detection(Mat mask, Point2f& center, float& radius){
     Mat output = Mat::zeros(mask.rows, mask.cols, CV_8UC1);
 
 	vector<Point2f> edgePositions;
@@ -148,7 +175,6 @@ Mat image_processing::ellipse_detection(Mat mask){
 	distanceTransform(255-mask, dt, DIST_L1, 3);
 
     // create circle from 3 points:
-    Point2f center; float radius;
     getCircle(edgePositions[0],edgePositions[1],edgePositions[2],center,radius);
 
     float minCirclePercentage = 0.0015f;
@@ -156,7 +182,7 @@ Mat image_processing::ellipse_detection(Mat mask){
     float cPerc = verifyCircle(dt, center, radius);
 
     if(cPerc >= minCirclePercentage && radius > 6000){
-        cout << "circle with center: " << center << " radius: " << radius << " inliers: " <<  cPerc*100.0f  << "%" << endl;
+        //cout << "circle with center: " << center << " radius: " << radius << " inliers: " <<  cPerc*100.0f  << "%" << endl;
         circle(output, center, radius, Scalar(255,0,0),1);
 	}
 
