@@ -84,6 +84,7 @@ untitled: /installation/OpenCV-/lib/libopencv_core.so
 untitled: /installation/OpenCV-/lib/libopencv_imgcodecs.so
 untitled: /installation/OpenCV-/lib/libopencv_imgproc.so
 untitled: /installation/OpenCV-/lib/libopencv_photo.so
+untitled: /installation/OpenCV-/lib/libopencv_calib3d.so
 untitled: CMakeFiles/untitled.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/dan/GitHub/ImageProcessing/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable untitled"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/untitled.dir/link.txt --verbose=$(VERBOSE)
