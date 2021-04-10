@@ -24,11 +24,19 @@ class image_calibration {
   	// Defining the dimensions of checkerboard
 	int CHECKERBOARD[2]{6,9}; 
 
-	Mat cameraMatrix, distCoeffs, R, T;
+	Mat cameraMatrix;	//Intrinsic Camera Matrix
+	Mat distCoeffs;		//Lens distortion coefficients
+	Mat R;				//Rotation specified as a 3×1 vector. The direction of the vector specifies the axis of rotation and the magnitude of the vector specifies the angle of rotation.
+	Mat T;				//3×1 Translation vector
+
+	Mat newCameraMatrix;
+	Mat roi;
+
     string settings_file_path;
 
     void take_calibration_images();
     void calibrate();
+    
     void save_parameters();
     void read_parameters();
     void print_parameters();

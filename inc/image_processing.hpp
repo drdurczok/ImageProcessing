@@ -24,16 +24,23 @@ class image_processing {
     float   getCircleRadius(uint);
 
   private:
+    string settings_file_path;
+
     Point2f center[2];
     float   radius[2];
 
+    //Filters
     Mat sobelEdgeDetection(Mat);
     Mat getFloorPixels(Mat);
     Mat getCeilingPixels(Mat);
 
+    //Detection
     float verifyCircle(Mat, Point2f, float);
     void getCircle(Point2f&, Point2f&, Point2f&, Point2f&, float&);
     vector<Point2f> getCirclePoints(Mat binaryImage);
+
+    //Undistortion
+
 
 };
 

@@ -95,6 +95,10 @@ void image_calibration::calibrate(){
     */
     calibrateCamera(objpoints, imgpoints, Size(gray.rows,gray.cols), this->cameraMatrix, this->distCoeffs, this->R, this->T);
 
+    cv::Size s = frame.size();
+
+    this->newCameraMatrix, this->roi = getOptimalNewCameraMatrix(this->cameraMatrix, this->distCoeffs, s, 1, s);
+
     this->save_parameters();
 }
 
@@ -104,6 +108,8 @@ void image_calibration::save_parameters(){
     file << "distCoeffs" << this->distCoeffs;
     file << "R" << this->R;
     file << "T" << this->T;
+    file << "newCameraMatrix" << this->newCameraMatrix;
+    file << "roi" << this->roi;
     file.release();
 
     this->print_parameters();
@@ -115,6 +121,8 @@ void image_calibration::read_parameters(){
     file["distCoeffs"] >> this->distCoeffs;
     file["R"] >> this->R;
     file["T"] >> this->T;
+    file["newCameraMatrix"] >> this->newCameraMatrix;
+    file["roi"] >> this->roi;
     file.release();
 
     this->print_parameters();
@@ -125,6 +133,8 @@ void image_calibration::print_parameters(){
     cout << "distCoeffs : " << this->distCoeffs << endl;
     cout << "Rotation vector : " << this->R << endl;
     cout << "Translation vector : " << this->T << endl;
+    cout << "newCameraMatrix : " << this->newCameraMatrix << endl;
+    cout << "roi : " << this->roi << endl;
 }
 
 inline bool image_calibration::check_file_exists (const std::string& name) {

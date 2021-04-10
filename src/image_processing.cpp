@@ -1,6 +1,8 @@
 #include "../inc/image_processing.hpp"
 
 image_processing::image_processing(){
+	settings_file_path = "../calibration/calib.yaml";
+
 	center[0] = Point2f(0,0);
 	center[1] = Point2f(0,0);
 	radius[0] = 0;
