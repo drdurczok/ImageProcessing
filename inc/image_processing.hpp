@@ -40,7 +40,10 @@ class image_processing {
     vector<Point2f> getCirclePoints(Mat binaryImage);
 
     //Undistortion
+    Mat mapx, mapy;
 
+    void read_camera_parameters();
+    Mat undistort(Mat);
 
 };
 

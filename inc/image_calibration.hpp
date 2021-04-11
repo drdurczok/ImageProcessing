@@ -32,6 +32,8 @@ class image_calibration {
 	Mat newCameraMatrix;
 	Mat roi;
 
+	Mat mapx, mapy;
+
     string settings_file_path;
 
     void take_calibration_images();

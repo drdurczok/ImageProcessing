@@ -99,6 +99,10 @@ void image_calibration::calibrate(){
 
     this->newCameraMatrix, this->roi = getOptimalNewCameraMatrix(this->cameraMatrix, this->distCoeffs, s, 1, s);
 
+    Mat ident = Mat::eye(3,3,CV_32F);
+
+    initUndistortRectifyMap(this->cameraMatrix, this->distCoeffs, ident, this->newCameraMatrix, s, 5, this->mapx, this->mapy);
+
     this->save_parameters();
 }
 
@@ -110,9 +114,11 @@ void image_calibration::save_parameters(){
     file << "T" << this->T;
     file << "newCameraMatrix" << this->newCameraMatrix;
     file << "roi" << this->roi;
+    file << "mapx" << this->mapx;
+    file << "mapy" << this->mapy;
     file.release();
 
-    this->print_parameters();
+    //this->print_parameters();
 }
 
 void image_calibration::read_parameters(){
@@ -123,6 +129,8 @@ void image_calibration::read_parameters(){
     file["T"] >> this->T;
     file["newCameraMatrix"] >> this->newCameraMatrix;
     file["roi"] >> this->roi;
+    file["mapx"] >> this->mapx;
+    file["mapy"] >> this->mapy;
     file.release();
 
     this->print_parameters();
@@ -135,6 +143,8 @@ void image_calibration::print_parameters(){
     cout << "Translation vector : " << this->T << endl;
     cout << "newCameraMatrix : " << this->newCameraMatrix << endl;
     cout << "roi : " << this->roi << endl;
+    //cout << "mapx : " << this->mapx << endl;
+    //cout << "mapy : " << this->mapy << endl;
 }
 
 inline bool image_calibration::check_file_exists (const std::string& name) {

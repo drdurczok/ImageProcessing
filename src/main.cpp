@@ -19,6 +19,7 @@ int main(){
 	img_core.display_image(0, image);
 	//img_core.save_image("temp.jpg",image);
 
+    img_calib.get_settings();
  	Mat img_filtered = img_proc.filter(image);
 	Mat img_circles = img_proc.position_detection(img_filtered);
 
@@ -39,7 +40,6 @@ int main(){
 	
     waitKey(0); // Wait for a keystroke in the window
 
-    img_calib.get_settings();
 
     return 0;
 }

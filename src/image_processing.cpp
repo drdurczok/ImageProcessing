@@ -7,6 +7,8 @@ image_processing::image_processing(){
 	center[1] = Point2f(0,0);
 	radius[0] = 0;
 	radius[1] = 0;
+
+	read_camera_parameters();
 }
 
 Point2f image_processing::getCircleCenter(uint i){
@@ -35,9 +37,12 @@ Mat image_processing::filter(Mat input){
 	if (input.empty()){
 		cout << "Error: missing image\n\n" << endl;
 	}
+
 	//Convert image
 	Mat output, kernel;
 	cvtColor(input, output, COLOR_RGB2GRAY);
+
+	output = this->undistort(output);
 
 	/*
 	 *	Make binary image
@@ -275,4 +280,23 @@ std::vector<cv::Point2f> image_processing::getCirclePoints(Mat binaryImage){
 
 
 	return edgePositions;
+}
+
+void image_processing::read_camera_parameters(){
+    cv::FileStorage file(settings_file_path, cv::FileStorage::READ);
+    file["mapx"] >> this->mapx;
+    file["mapy"] >> this->mapy;
+    file.release();
+}
+
+Mat image_processing::undistort(Mat img){
+	Mat output;
+	remap(img, output, this->mapx, this->mapy, INTER_LINEAR);
+
+	// crop the image
+	//x, y, w, h = roi;
+	//dst = dst[y:y+h, x:x+w]
+	//cv.imwrite('calibresult.png', dst)
+
+	return output;
 }
