@@ -300,3 +300,29 @@ Mat image_processing::undistort(Mat img){
 
 	return output;
 }
+
+uint image_processing::pixel_to_distance(uint pixels){
+	/*	Calculates the distance in mm from the number of pixels from the bottom of the screen.
+	 *	
+	 *	Formula:
+	 *		distance = H * tan( min_camera_angle +/- pixels / image_size  * camera_viewing_angle )
+	 *			H - height of camera lens
+	 *			pixels - number of pixels from bottom of image
+	 *			camera_viewing_angle - total viewing angles of camera
+	 *
+	 *		min_camera_angle = camera_angle - camera_viewing_angle / 2
+	 *			camera_angle - angle of camera lens to perpendicular of floor
+	 *			
+	 */
+
+	float H = 200.0; 					//[mm]
+	float camera_viewing_angle = 40.0; 	//[deg]
+	float image_size = 320.0;
+	float camera_angle = 30.0;			 //[deg]
+
+	double min_camera_angle = camera_angle - camera_viewing_angle / 2;
+
+	const double to_rad = PI / 180.0;
+
+	return H * tan( (min_camera_angle + pixels / image_size * camera_viewing_angle) * to_rad );
+}

@@ -17,7 +17,7 @@ image_calibration::image_calibration(){
  */
 
 bool image_calibration::get_settings(){
-    this->remove_calib_file();
+    //this->remove_calib_file();
 
     if (check_file_exists(settings_file_path)){
         cout << "Camera configuration file exists, reading parameters" << endl;
@@ -75,7 +75,7 @@ void image_calibration::calibrate(){
         // If desired number of corners are found in the image then success = true  
         success = findChessboardCorners(gray, Size(CHECKERBOARD[0], CHECKERBOARD[1]), corner_pts, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK | CALIB_CB_NORMALIZE_IMAGE);
 
-        this->display_calib_images(frame, corner_pts, success);
+        //this->display_calib_images(frame, corner_pts, success);
 
         //If desired number of corner are detected, we refine the pixel coordinates and display them on the images of checker board
         if(success){
@@ -133,7 +133,7 @@ void image_calibration::read_parameters(){
     file["mapy"] >> this->mapy;
     file.release();
 
-    this->print_parameters();
+    //this->print_parameters();
 }
 
 void image_calibration::print_parameters(){

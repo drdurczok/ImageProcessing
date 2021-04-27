@@ -8,9 +8,8 @@
 using namespace cv;
 using namespace std;
 
-
 int main(){
-	string path_to_image = "../samples/images/IMG_003.jpg";
+	string path_to_image = "../samples/images/picture250.jpg";
 	image_core img_core(2,2);
   	image_calibration img_calib;
 	image_processing img_proc;
@@ -40,6 +39,9 @@ int main(){
 	
     waitKey(0); // Wait for a keystroke in the window
 
+    for (int i = 0; i < 300; i++){
+    	cout << "Distance to camera center [" << i << "]: " << img_proc.pixel_to_distance(i) << endl;
+	}
 
     return 0;
 }

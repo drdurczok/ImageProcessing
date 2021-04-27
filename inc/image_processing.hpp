@@ -4,9 +4,12 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/photo.hpp>
+#include <cmath>
 
 using namespace std;
 using namespace cv;
+
+#define PI 3.14159265
 
 class image_processing {
   public:
@@ -22,6 +25,9 @@ class image_processing {
 
     Point2f getCircleCenter(uint);
     float   getCircleRadius(uint);
+
+    //Pixel to Distance Calculations
+    uint pixel_to_distance(uint pixels);
 
   private:
     string settings_file_path;
