@@ -315,8 +315,8 @@ uint image_processing::pixel_to_distance(uint pixels){
 	 *			
 	 */
 
-	float H = 200.0; 					//[mm]
-	float camera_viewing_angle = 40.0; 	//[deg]
+	float H = 200.0; 					 //[mm]
+	float camera_viewing_angle = 40.0; 	 //[deg]
 	float image_size = 320.0;
 	float camera_angle = 30.0;			 //[deg]
 

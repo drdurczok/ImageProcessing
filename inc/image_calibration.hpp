@@ -22,7 +22,9 @@ class image_calibration {
 
   private:
   	// Defining the dimensions of checkerboard
-	int CHECKERBOARD[2]{6,9}; 
+	int   CHECKERBOARD[2]{6,9}; 
+	float CHECKERBOARD_SQUARE_SIZE = 20.0;
+	Size  CHECKERBOARD_SIZE = Size(CHECKERBOARD[0], CHECKERBOARD[1]);
 
 	Mat cameraMatrix;	//Intrinsic Camera Matrix
 	Mat distCoeffs;		//Lens distortion coefficients
@@ -38,6 +40,7 @@ class image_calibration {
 
     void take_calibration_images();
     void calibrate();
+    void find_homography_matrix();
     
     void save_parameters();
     void read_parameters();

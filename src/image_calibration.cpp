@@ -32,6 +32,9 @@ bool image_calibration::get_settings(){
         this->take_calibration_images(); 
         this->calibrate(); 
     }
+
+    this->find_homography_matrix();
+
     return true;
 }
 
@@ -73,7 +76,7 @@ void image_calibration::calibrate(){
 
         // Finding checker board corners
         // If desired number of corners are found in the image then success = true  
-        success = findChessboardCorners(gray, Size(CHECKERBOARD[0], CHECKERBOARD[1]), corner_pts, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK | CALIB_CB_NORMALIZE_IMAGE);
+        success = findChessboardCorners(gray, CHECKERBOARD_SIZE, corner_pts, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK | CALIB_CB_NORMALIZE_IMAGE);
 
         //this->display_calib_images(frame, corner_pts, success);
 
@@ -104,6 +107,69 @@ void image_calibration::calibrate(){
     initUndistortRectifyMap(this->cameraMatrix, this->distCoeffs, ident, this->newCameraMatrix, s, 5, this->mapx, this->mapy);
 
     this->save_parameters();
+}
+
+//Replacement for SolvePnP()
+void image_calibration::find_homography_matrix(){
+    //Get image
+    string path = "../calibration/homography.jpg";
+    Mat frame = imread(path);
+
+
+    /*___________________Calculate Real World Points___________________*/
+
+    //Calculate object points
+    vector<Point3f> objectPoints;
+    for( int i = 0; i < CHECKERBOARD[1]; i++ )
+        for( int j = 0; j < CHECKERBOARD[0]; j++ )
+            objectPoints.push_back(Point3f(float(j*CHECKERBOARD_SQUARE_SIZE),
+                                      float(i*CHECKERBOARD_SQUARE_SIZE), 0));
+
+    //The coordinate Z=0 must be removed for the homography estimation part
+    vector<Point2f> objectPointsPlanar;
+    for (size_t i = 0; i < objectPoints.size(); i++){
+        objectPointsPlanar.push_back(Point2f(objectPoints[i].x, objectPoints[i].y));
+    }
+
+
+    /*___________________Calculate Image Points___________________*/
+
+    //Detect chessboard pattern
+    vector<Point2f> corners;
+    bool found = findChessboardCorners(frame, CHECKERBOARD_SIZE, corners);
+
+    //Undistort points using the intrinsic camera parameters
+    vector<Point2f> imagePoints;
+    undistortPoints(corners, imagePoints, this->cameraMatrix, this->distCoeffs);
+
+
+    /*___________________Calculate Homography___________________*/
+
+    Mat H = findHomography(objectPointsPlanar, imagePoints);
+    cout << "\nH:\n" << H << endl;
+
+
+    /*___________________Calculate Distance to normal___________________*/
+
+    Mat rvec, tvec;
+    solvePnP(objectPoints, corners, cameraMatrix, distCoeffs, rvec, tvec);
+    cout << "\nrvec:\n" << rvec << endl;
+    cout << "\ntvec:\n" << tvec << endl;
+
+    Mat R1;
+    Rodrigues(rvec, R1);
+    
+    Mat normal = R1*(Mat_<double>(3,1) << 0, 0, 1);
+    cout << "\nnormal:\n" << normal << endl;
+
+    Mat origin(3, 1, CV_64F, Scalar(0));
+    Mat origin1 = R1*origin + tvec;
+    cout << "\norigin:\n" << origin1 << endl;
+
+    //The distance d can be computed as the dot product between the plane normal and a point on the plane
+    double d = normal.dot(origin1);
+
+    cout << "\nd: " << d << endl;
 }
 
 void image_calibration::save_parameters(){

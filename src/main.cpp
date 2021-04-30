@@ -34,13 +34,13 @@ int main(){
  	radius[1] = img_proc.getCircleRadius(1);
 
   	for (uint i = 0; i < sizeof(radius)/sizeof(*radius); i++){
-  		cout << "circle " << i << " with center: " << center[i] << " radius: " << radius[i] << endl;
+  		//cout << "circle " << i << " with center: " << center[i] << " radius: " << radius[i] << endl;
 	}
 	
     waitKey(0); // Wait for a keystroke in the window
 
     for (int i = 0; i < 300; i++){
-    	cout << "Distance to camera center [" << i << "]: " << img_proc.pixel_to_distance(i) << endl;
+    	//cout << "Distance to camera center [" << i << "]: " << img_proc.pixel_to_distance(i) << endl;
 	}
 
     return 0;
