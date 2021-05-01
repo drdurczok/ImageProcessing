@@ -42,7 +42,7 @@ Mat image_processing::filter(Mat input){
 	Mat output, kernel;
 	cvtColor(input, output, COLOR_RGB2GRAY);
 
-	output = this->undistort(output);
+	//output = this->undistort(output);
 
 	/*
 	 *	Make binary image

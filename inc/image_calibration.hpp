@@ -23,7 +23,7 @@ class image_calibration {
   private:
   	// Defining the dimensions of checkerboard
 	int   CHECKERBOARD[2]{6,9}; 
-	float CHECKERBOARD_SQUARE_SIZE = 20.0;
+	float CHECKERBOARD_SQUARE_SIZE = 25.0;
 	Size  CHECKERBOARD_SIZE = Size(CHECKERBOARD[0], CHECKERBOARD[1]);
 
 	Mat cameraMatrix;	//Intrinsic Camera Matrix
@@ -36,19 +36,24 @@ class image_calibration {
 
 	Mat mapx, mapy;
 
+	Mat homographyMatrix;
+	double distanceToPlaneNormal;
+
+    string calibration_file_path;
     string settings_file_path;
 
     void take_calibration_images();
+    void take_homography_images();
     void calibrate();
     void find_homography_matrix();
-    
-    void save_parameters();
-    void read_parameters();
-    void print_parameters();
+
+    void save_parameters(string);
+    void read_parameters(string);
+    void print_parameters(string);
     bool check_file_exists(const std::string&);
     bool check_images_exist();
-    void remove_calib_file();
-    void remove_calib_images();
+    void remove_file(string);
+    void remove_images();
     void display_calib_images(Mat, vector<Point2f>, bool);
 
 };

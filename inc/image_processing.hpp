@@ -16,6 +16,7 @@ class image_processing {
     enum edge_filter_methods{SOBEL,FLOOR_PIXELS,CEILING_PIXELS};
 
     image_processing();
+    Mat undistort(Mat); //TODO: Move to privete after finished testing.
     Mat filter(Mat);
     Mat find_edge(Mat, edge_filter_methods);
 
@@ -49,7 +50,6 @@ class image_processing {
     Mat mapx, mapy;
 
     void read_camera_parameters();
-    Mat undistort(Mat);
 
 };
 

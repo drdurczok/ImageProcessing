@@ -1,7 +1,8 @@
 #include "../inc/image_calibration.hpp"
 
 image_calibration::image_calibration(){
-	settings_file_path = "../calibration/calib.yaml";
+    calibration_file_path = "../calibration/calib.yaml";
+	settings_file_path = "../calibration/settings.yaml";
 }
 
 // https://learnopencv.com/camera-calibration-using-opencv/
@@ -17,11 +18,13 @@ image_calibration::image_calibration(){
  */
 
 bool image_calibration::get_settings(){
-    //this->remove_calib_file();
+    //this->remove_file(calibration_file_path);
+    this->remove_file(settings_file_path);
 
-    if (check_file_exists(settings_file_path)){
+    //Calibration
+    if (check_file_exists(calibration_file_path)){
         cout << "Camera configuration file exists, reading parameters" << endl;
-        this->read_parameters();
+        this->read_parameters(calibration_file_path);
     }
     else if (check_images_exist()){
         cout << "Camera configuration does not exist, creating parameters" << endl;
@@ -33,6 +36,20 @@ bool image_calibration::get_settings(){
         this->calibrate(); 
     }
 
+    //Homography
+    if (check_file_exists(settings_file_path)){
+        cout << "Camera settings file exists, reading parameters" << endl;
+        this->read_parameters(settings_file_path);
+    }
+    else if (check_images_exist()){
+        cout << "Camera settings don't exist, creating parameters" << endl;
+       this->find_homography_matrix();
+    }
+    else{
+        this->take_homography_images();
+        this->find_homography_matrix();
+    }
+
     this->find_homography_matrix();
 
     return true;
@@ -41,6 +58,11 @@ bool image_calibration::get_settings(){
 void image_calibration::take_calibration_images(){
 
 }
+
+void image_calibration::take_homography_images(){
+
+}
+
 
 void image_calibration::calibrate(){
     // Creating vector to store vectors of 3D points for each checkerboard image
@@ -106,7 +128,7 @@ void image_calibration::calibrate(){
 
     initUndistortRectifyMap(this->cameraMatrix, this->distCoeffs, ident, this->newCameraMatrix, s, 5, this->mapx, this->mapy);
 
-    this->save_parameters();
+    this->save_parameters(calibration_file_path);
 }
 
 //Replacement for SolvePnP()
@@ -138,6 +160,9 @@ void image_calibration::find_homography_matrix(){
     vector<Point2f> corners;
     bool found = findChessboardCorners(frame, CHECKERBOARD_SIZE, corners);
 
+    //Display chessboard corners
+    this->display_calib_images(frame, corners, found);
+
     //Undistort points using the intrinsic camera parameters
     vector<Point2f> imagePoints;
     undistortPoints(corners, imagePoints, this->cameraMatrix, this->distCoeffs);
@@ -145,9 +170,7 @@ void image_calibration::find_homography_matrix(){
 
     /*___________________Calculate Homography___________________*/
 
-    Mat H = findHomography(objectPointsPlanar, imagePoints);
-    cout << "\nH:\n" << H << endl;
-
+    this->homographyMatrix = findHomography(objectPointsPlanar, imagePoints);
 
     /*___________________Calculate Distance to normal___________________*/
 
@@ -156,61 +179,83 @@ void image_calibration::find_homography_matrix(){
     cout << "\nrvec:\n" << rvec << endl;
     cout << "\ntvec:\n" << tvec << endl;
 
+    //Calculate normal plan
     Mat R1;
     Rodrigues(rvec, R1);
-    
     Mat normal = R1*(Mat_<double>(3,1) << 0, 0, 1);
     cout << "\nnormal:\n" << normal << endl;
 
+    //Calculate origin of camera on camera plane
     Mat origin(3, 1, CV_64F, Scalar(0));
-    Mat origin1 = R1*origin + tvec;
-    cout << "\norigin:\n" << origin1 << endl;
+    origin = R1*origin + tvec;
+    cout << "\norigin:\n" << origin << endl;
 
     //The distance d can be computed as the dot product between the plane normal and a point on the plane
-    double d = normal.dot(origin1);
+    this->distanceToPlaneNormal = normal.dot(origin);
 
-    cout << "\nd: " << d << endl;
+    this->save_parameters(settings_file_path);
 }
 
-void image_calibration::save_parameters(){
-    cv::FileStorage file(settings_file_path, cv::FileStorage::WRITE);
-    file << "cameraMatrix" << this->cameraMatrix;
-    file << "distCoeffs" << this->distCoeffs;
-    file << "R" << this->R;
-    file << "T" << this->T;
-    file << "newCameraMatrix" << this->newCameraMatrix;
-    file << "roi" << this->roi;
-    file << "mapx" << this->mapx;
-    file << "mapy" << this->mapy;
+void image_calibration::save_parameters(string path){
+    cv::FileStorage file(path, cv::FileStorage::WRITE);
+
+    if(path == calibration_file_path) {
+        file << "cameraMatrix" << this->cameraMatrix;
+        file << "distCoeffs" << this->distCoeffs;
+        file << "R" << this->R;
+        file << "T" << this->T;
+        file << "newCameraMatrix" << this->newCameraMatrix;
+        file << "roi" << this->roi;
+        file << "mapx" << this->mapx;
+        file << "mapy" << this->mapy;
+    }
+    else if(path == settings_file_path) {
+        file << "homographyMatrix" << this->homographyMatrix;
+    }
+
     file.release();
 
-    //this->print_parameters();
+    this->print_parameters(path);
 }
 
-void image_calibration::read_parameters(){
-    cv::FileStorage file(settings_file_path, cv::FileStorage::READ);
-    file["cameraMatrix"] >> this->cameraMatrix;
-    file["distCoeffs"] >> this->distCoeffs;
-    file["R"] >> this->R;
-    file["T"] >> this->T;
-    file["newCameraMatrix"] >> this->newCameraMatrix;
-    file["roi"] >> this->roi;
-    file["mapx"] >> this->mapx;
-    file["mapy"] >> this->mapy;
+void image_calibration::read_parameters(string path){
+    cv::FileStorage file(path, cv::FileStorage::READ);
+
+    if(path == calibration_file_path) {
+        file["cameraMatrix"] >> this->cameraMatrix;
+        file["distCoeffs"] >> this->distCoeffs;
+        file["R"] >> this->R;
+        file["T"] >> this->T;
+        file["newCameraMatrix"] >> this->newCameraMatrix;
+        file["roi"] >> this->roi;
+        file["mapx"] >> this->mapx;
+        file["mapy"] >> this->mapy;
+    }
+    else if (path == settings_file_path) {
+        file["homographyMatrix"] >> this->homographyMatrix;
+        file["distanceToPlaneNormal"] >> this->distanceToPlaneNormal;
+    }
+
     file.release();
 
-    //this->print_parameters();
+    //this->print_parameters(path);
 }
 
-void image_calibration::print_parameters(){
-    cout << "cameraMatrix : " << this->cameraMatrix << endl;
-    cout << "distCoeffs : " << this->distCoeffs << endl;
-    cout << "Rotation vector : " << this->R << endl;
-    cout << "Translation vector : " << this->T << endl;
-    cout << "newCameraMatrix : " << this->newCameraMatrix << endl;
-    cout << "roi : " << this->roi << endl;
-    //cout << "mapx : " << this->mapx << endl;
-    //cout << "mapy : " << this->mapy << endl;
+void image_calibration::print_parameters(string path){
+    if(path == calibration_file_path) {
+        cout << "cameraMatrix : " << this->cameraMatrix << endl;
+        cout << "distCoeffs : " << this->distCoeffs << endl;
+        cout << "Rotation vector : " << this->R << endl;
+        cout << "Translation vector : " << this->T << endl;
+        cout << "newCameraMatrix : " << this->newCameraMatrix << endl;
+        cout << "roi : " << this->roi << endl;
+        //cout << "mapx : " << this->mapx << endl;
+        //cout << "mapy : " << this->mapy << endl;
+    }
+    else if(path == settings_file_path) {
+        cout << "homographyMatrix : " << this->homographyMatrix << endl;
+        cout << "distanceToPlaneNormal : " << this->distanceToPlaneNormal << endl;
+    }
 }
 
 inline bool image_calibration::check_file_exists (const std::string& name) {
@@ -224,14 +269,14 @@ inline bool image_calibration::check_images_exist(){
     return true;
 }
 
-void image_calibration::remove_calib_file(){
-    if( remove( settings_file_path.c_str() ) != 0 )
-        cout << "Error deleting camera calibration file" << endl;
+void image_calibration::remove_file(string path){
+    if( remove( path.c_str() ) != 0 )
+        cout << "Error deleting " << path << endl;
     else
-        cout << "Camera calibration file successfully deleted" << endl;
+        cout << path << " successfully deleted" << endl;
 }
 
-void image_calibration::remove_calib_images(){
+void image_calibration::remove_images(){
 
 }
 

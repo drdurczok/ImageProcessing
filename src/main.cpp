@@ -22,8 +22,18 @@ int main(){
  	Mat img_filtered = img_proc.filter(image);
 	Mat img_circles = img_proc.position_detection(img_filtered);
 
-  	img_core.display_image(1, img_filtered);
- 	img_core.display_image(2, img_circles);
+	/*Teporary code for testing */
+	Mat img_undistort = img_proc.undistort(image);
+	img_core.display_image(1, img_undistort);
+
+  	img_core.display_image(2, img_filtered);
+ 	img_core.display_image(3, img_circles);
+
+
+
+
+
+
 
 
  	Point2f center[2];
