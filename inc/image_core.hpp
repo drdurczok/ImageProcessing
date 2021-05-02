@@ -18,8 +18,8 @@ class image_core {
 	cv::Mat get_DFT(cv::Mat, bool);
 
   private:
-  	uint16_t screen_res_x = 1080;
-  	uint16_t screen_res_y = 720;
+  	uint16_t screen_res_x = 240*2;
+  	uint16_t screen_res_y = 320*2;
 
   	void prepare_windows(uint8_t, uint8_t);
 

@@ -20,23 +20,35 @@ class image_calibration {
 
     bool get_settings();
 
+    void get_focal_length_mm();
+    Mat get_camera_position_world_coordinates();
+    Mat get_world_origin_camera_coordinates(); 
+
   private:
   	// Defining the dimensions of checkerboard
 	int   CHECKERBOARD[2]{6,9}; 
 	float CHECKERBOARD_SQUARE_SIZE = 25.0;
 	Size  CHECKERBOARD_SIZE = Size(CHECKERBOARD[0], CHECKERBOARD[1]);
 
-	Mat cameraMatrix;	//Intrinsic Camera Matrix
+	// Defining physical parameters of camera
+	float CAMERA_SENSOR_WIDTH = 3.59;	 // Camera sensor width [mm]
+	float CAMERA_SENSOR_HEIGHT = 2.684;  // Camera sensor height [mm]
+	Size IMAGE_SIZE;					 // Image size [pixels]
+	const double PIXEL_TO_MM = 3.59/320*1.8;
+
+	/* The cameraMatrix is the Intrinsic Camera Matrix, a matrix that contains:
+	 * 		-The cameras focal lengths [pixels]
+	 *		-The principle points, optical centers [pixels]
+	 * Multiply it by a point in the camera coordinate system to obtain a point in
+	 * the image coordinate system.
+	 */
+	Mat cameraMatrix;
 	Mat distCoeffs;		//Lens distortion coefficients
-	Mat R;				//Rotation specified as a 3×1 vector. The direction of the vector specifies the axis of rotation and the magnitude of the vector specifies the angle of rotation.
-	Mat T;				//3×1 Translation vector
-
-	Mat newCameraMatrix;
-	Mat roi;
-
 	Mat mapx, mapy;
 
+	Mat rvec, tvec;
 	Mat homographyMatrix;
+	Mat homographyMatrixInv;
 	double distanceToPlaneNormal;
 
     string calibration_file_path;
@@ -54,8 +66,7 @@ class image_calibration {
     bool check_images_exist();
     void remove_file(string);
     void remove_images();
-    void display_calib_images(Mat, vector<Point2f>, bool);
-
+    void display_calib_images(Mat, vector<Point2f>, string, bool);
 };
 
 #endif

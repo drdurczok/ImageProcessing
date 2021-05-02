@@ -1,14 +1,16 @@
 #include "../inc/image_processing.hpp"
 
 image_processing::image_processing(){
-	settings_file_path = "../calibration/calib.yaml";
+    calibration_file_path = "../calibration/calib.yaml";
+	settings_file_path = "../calibration/settings.yaml";
 
 	center[0] = Point2f(0,0);
 	center[1] = Point2f(0,0);
 	radius[0] = 0;
 	radius[1] = 0;
 
-	read_camera_parameters();
+	read_camera_parameters(calibration_file_path);
+	read_camera_parameters(settings_file_path);
 }
 
 Point2f image_processing::getCircleCenter(uint i){
@@ -282,14 +284,27 @@ std::vector<cv::Point2f> image_processing::getCirclePoints(Mat binaryImage){
 	return edgePositions;
 }
 
-void image_processing::read_camera_parameters(){
-    cv::FileStorage file(settings_file_path, cv::FileStorage::READ);
-    file["mapx"] >> this->mapx;
-    file["mapy"] >> this->mapy;
+void image_processing::read_camera_parameters(string path){
+	cv::FileStorage file(path, cv::FileStorage::READ);
+	if (path == calibration_file_path){
+		file["cameraMatrix"] >> this->cameraMatrix;
+        file["distCoeffs"] >> this->distCoeffs;
+	    file["mapx"] >> this->mapx;
+	    file["mapy"] >> this->mapy;
+	}
+	else if (path == settings_file_path){
+		file["rvec"] >> this->rvec;
+        file["tvec"] >> this->tvec;
+        file["homographyMatrix"] >> this->homographyMatrix;
+        file["homographyMatrixInv"] >> this->homographyMatrixInv;
+        file["distanceToPlaneNormal"] >> this->distanceToPlaneNormal;
+	}
     file.release();
 }
 
 Mat image_processing::undistort(Mat img){
+	read_camera_parameters(calibration_file_path);
+
 	Mat output;
 	remap(img, output, this->mapx, this->mapy, INTER_LINEAR);
 
@@ -325,4 +340,31 @@ uint image_processing::pixel_to_distance(uint pixels){
 	const double to_rad = PI / 180.0;
 
 	return H * tan( (min_camera_angle + pixels / image_size * camera_viewing_angle) * to_rad );
+}
+
+Mat image_processing::homography_calc(Mat pixel){
+    /*
+     * Convert point in image frame to homogeneous coordinates.
+     *  1 pixel = 1 mm
+     */
+    Mat point_H = this->homographyMatrixInv * pixel;
+
+    //Noramlize the point
+    point_H =  point_H / point_H.at<double>(2);
+
+    return point_H;
+}
+
+Mat image_processing::get_homography_frame(Mat frame){
+	Mat homography_frame;
+    warpPerspective(frame, homography_frame, this->homographyMatrixInv, frame.size());
+
+    return homography_frame;
+}
+
+Mat image_processing::get_homography_origin_frame(Mat frame){
+	uint CHECKERBOARD_SQUARE_SIZE = 25;
+    drawFrameAxes(frame, this->cameraMatrix, this->distCoeffs, this->rvec, this->tvec, 2*CHECKERBOARD_SQUARE_SIZE);
+
+    return frame;
 }

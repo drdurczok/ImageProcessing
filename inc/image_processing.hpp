@@ -30,7 +30,13 @@ class image_processing {
     //Pixel to Distance Calculations
     uint pixel_to_distance(uint pixels);
 
+    //Homography
+    Mat homography_calc(Mat);
+    Mat get_homography_frame(Mat);
+    Mat get_homography_origin_frame(Mat);
+
   private:
+    string calibration_file_path;
     string settings_file_path;
 
     Point2f center[2];
@@ -47,9 +53,18 @@ class image_processing {
     vector<Point2f> getCirclePoints(Mat binaryImage);
 
     //Undistortion
+    Mat cameraMatrix;
+    Mat distCoeffs;     //Lens distortion coefficients
     Mat mapx, mapy;
 
-    void read_camera_parameters();
+    void read_camera_parameters(string);
+
+    //Homography
+    Mat rvec;
+    Mat tvec;
+    Mat homographyMatrix;
+    Mat homographyMatrixInv;
+    double distanceToPlaneNormal;
 
 };
 
