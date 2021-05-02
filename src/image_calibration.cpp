@@ -166,19 +166,19 @@ void image_calibration::find_homography_matrix(){
     bool found = findChessboardCorners(frame, CHECKERBOARD_SIZE, corners);
 
     //Display chessboard corners
-    //this->display_calib_images(frame, corners, found);
+    //this->display_calib_images(frame, corners, path, found);
 
     //Undistort points using the intrinsic camera parameters
-    //TODO currently unused because of normalization of points by undistortPoints causes scaling problems
     vector<Point2f> imagePoints;
     undistortPoints(corners, imagePoints, this->cameraMatrix, this->distCoeffs);
+    //TODO currently unused because of normalization of points by undistortPoints causes scaling problems
+    //temp code to bypass normalization issue
+    imagePoints = corners;
+    //end of temp code fix
 
     /*___________________Calculate Homography___________________*/
 
-    //temp code to bypass bad calibration
-    //imagePoints = corners;
-
-    this->homographyMatrix = findHomography(objectPointsPlanar, corners);
+    this->homographyMatrix = findHomography(objectPointsPlanar, imagePoints);
 
     //Normalize matrix
     this->homographyMatrix = this->homographyMatrix / this->homographyMatrix.at<double>(2,2);
@@ -203,8 +203,24 @@ void image_calibration::find_homography_matrix(){
     this->distanceToPlaneNormal = normal.dot(origin);
     cout << "\ndistanceToPlaneNormal: " << this->distanceToPlaneNormal << endl;
 
+    /*___________________Calculate mm per pixel___________________*/
+
+    Mat homography_frame;
+    warpPerspective(frame, homography_frame, this->homographyMatrixInv, frame.size());
+
+    found = findChessboardCorners(homography_frame, CHECKERBOARD_SIZE, corners);
+    //this->display_calib_images(homography_frame, corners, "Homography checkerboard", found);
+
+    double d_pixels = sqrt(pow(corners[1].x - corners[0].x, 2) + pow(corners[1].y - corners[0].y, 2) * 1.0); 
+
+    this->pix_to_mm = d_pixels / CHECKERBOARD_SQUARE_SIZE;
+
+    cout << "\nLength of checkboard square in pixels: " << d_pixels << endl;
+    cout << "Pixels per mm: " << pix_to_mm << endl;
+
     this->save_parameters(settings_file_path);
 }
+
 
 void image_calibration::save_parameters(string path){
     cv::FileStorage file(path, cv::FileStorage::WRITE);
@@ -222,6 +238,7 @@ void image_calibration::save_parameters(string path){
         file << "homographyMatrix" << this->homographyMatrix;
         file << "homographyMatrixInv" << this->homographyMatrixInv;
         file << "distanceToPlaneNormal" << this->distanceToPlaneNormal;
+        file << "pix_to_mm" << this->pix_to_mm;
     }
 
     file.release();
@@ -245,6 +262,7 @@ void image_calibration::read_parameters(string path){
         file["homographyMatrix"] >> this->homographyMatrix;
         file["homographyMatrixInv"] >> this->homographyMatrixInv;
         file["distanceToPlaneNormal"] >> this->distanceToPlaneNormal;
+        file["pix_to_mm"] >> this->pix_to_mm;
     }
 
     file.release();

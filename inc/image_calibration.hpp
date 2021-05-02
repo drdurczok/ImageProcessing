@@ -50,6 +50,7 @@ class image_calibration {
 	Mat homographyMatrix;
 	Mat homographyMatrixInv;
 	double distanceToPlaneNormal;
+	double pix_to_mm;
 
     string calibration_file_path;
     string settings_file_path;
