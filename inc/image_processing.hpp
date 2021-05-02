@@ -31,9 +31,14 @@ class image_processing {
     uint pixel_to_distance(uint pixels);
 
     //Homography
-    Mat homography_calc(Mat);
+    Point2f homography_calc(Point2f);
     Mat get_homography_frame(Mat);
     Mat get_homography_origin_frame(Mat);
+
+    //Distance Calculations
+    double distance_camera_to_pixel(Point2f);
+
+    Mat draw_point_on_frame(Mat, Point2f);
 
   private:
     string calibration_file_path;
@@ -60,11 +65,17 @@ class image_processing {
     void read_camera_parameters(string);
 
     //Homography
+    void calculate_camera_coordinates();
+
     Mat rvec;
     Mat tvec;
     Mat homographyMatrix;
     Mat homographyMatrixInv;
     double distanceToPlaneNormal;
+
+    //Distance Calculations
+    Point2f camera_coordinates;
+    double pix_to_mm;
 
 };
 

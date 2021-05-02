@@ -9,8 +9,10 @@ image_processing::image_processing(){
 	radius[0] = 0;
 	radius[1] = 0;
 
-	read_camera_parameters(calibration_file_path);
-	read_camera_parameters(settings_file_path);
+	this->read_camera_parameters(calibration_file_path);
+	this->read_camera_parameters(settings_file_path);
+
+	this->calculate_camera_coordinates();
 }
 
 Point2f image_processing::getCircleCenter(uint i){
@@ -298,6 +300,7 @@ void image_processing::read_camera_parameters(string path){
         file["homographyMatrix"] >> this->homographyMatrix;
         file["homographyMatrixInv"] >> this->homographyMatrixInv;
         file["distanceToPlaneNormal"] >> this->distanceToPlaneNormal;
+        file["pix_to_mm"] >> this->pix_to_mm;
 	}
     file.release();
 }
@@ -342,17 +345,23 @@ uint image_processing::pixel_to_distance(uint pixels){
 	return H * tan( (min_camera_angle + pixels / image_size * camera_viewing_angle) * to_rad );
 }
 
-Mat image_processing::homography_calc(Mat pixel){
+Point2f image_processing::homography_calc(Point2f pixel){
     /*
-     * Convert point in image frame to homogeneous coordinates.
+     * Convert point in image frame to homography coordinates.
      *  1 pixel = 1 mm
      */
-    Mat point_H = this->homographyMatrixInv * pixel;
+    //Convert to Mat
+    double point_coord[] = {pixel.x, pixel.y, 1};
+    Mat CPoint = Mat(3, 1, CV_64F, point_coord);
+
+    //Calculate point in homography frame of reference
+    Mat HPoint = this->homographyMatrixInv * CPoint;
 
     //Noramlize the point
-    point_H =  point_H / point_H.at<double>(2);
+    HPoint =  HPoint / HPoint.at<double>(2);
 
-    return point_H;
+    //Convert back to Point2f
+    return Point2f(HPoint.at<double>(0), HPoint.at<double>(1));
 }
 
 Mat image_processing::get_homography_frame(Mat frame){
@@ -367,4 +376,27 @@ Mat image_processing::get_homography_origin_frame(Mat frame){
     drawFrameAxes(frame, this->cameraMatrix, this->distCoeffs, this->rvec, this->tvec, 2*CHECKERBOARD_SQUARE_SIZE);
 
     return frame;
+}
+
+void image_processing::calculate_camera_coordinates(){
+	Mat R, cameraPosition;
+
+    Rodrigues(this->rvec, R);
+
+    cameraPosition = -R.t() * this->tvec;
+
+    this->camera_coordinates = Point2f(cameraPosition.at<double>(0), cameraPosition.at<double>(1));
+
+    cout << this->camera_coordinates << endl;
+}
+
+double image_processing::distance_camera_to_pixel(Point2f pixel){
+	return sqrt(pow(pixel.x - this->camera_coordinates.x, 2) + pow(pixel.y - this->camera_coordinates.y, 2) * 1.0) * this->pix_to_mm; 
+}
+
+Mat image_processing::draw_point_on_frame(Mat frame, Point2f pixel){
+	cout << "Drawing circle" << endl;
+	circle(frame, pixel, 6, (0, 0, 255), -1);
+
+	return frame;
 }

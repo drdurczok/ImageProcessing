@@ -29,11 +29,19 @@ int main(){
 	//Mat img_undistort = img_proc.undistort(image);
 	//img_core.display_image(1, img_undistort);
 
- 	img_core.display_image(1, img_proc.get_homography_frame(image));
+	Mat HFrame = img_proc.get_homography_frame(image);
+ 	img_core.display_image(1, HFrame);
 
-    double p[] = {104,165};
- 	cout << "\nPoint in camera coordinates: (" << p[0] << ", " << p[1] << ") \ngives the following point in world coordinates:\n" 
- 		 << img_proc.homography_calc((Mat_<double>(3,1) << p[0], p[1], 1)) << endl;;
+    Point2f CPoint = Point2f(133, 50);
+    Point2f HPoint = img_proc.homography_calc(CPoint);
+
+ 	cout << "\nPoint in camera coordinates: " << CPoint << "\ngives the following point in world coordinates:\n" 
+ 		 << HPoint << endl;
+
+ 	cout << "\nDistance to pixel from camera: " << img_proc.distance_camera_to_pixel(CPoint) << endl;
+
+ 	img_core.display_image(2, img_proc.draw_point_on_frame(image, CPoint));
+ 	img_core.display_image(3, img_proc.draw_point_on_frame(HFrame, HPoint));
 
  	waitKey(0);
 	/*End testing*/

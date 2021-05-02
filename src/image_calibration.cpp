@@ -19,7 +19,7 @@ image_calibration::image_calibration(){
 
 bool image_calibration::get_settings(){
     //this->remove_file(calibration_file_path);
-    this->remove_file(settings_file_path);
+    //this->remove_file(settings_file_path);
 
     //Calibration
     if (check_file_exists(calibration_file_path)){
@@ -211,11 +211,11 @@ void image_calibration::find_homography_matrix(){
     found = findChessboardCorners(homography_frame, CHECKERBOARD_SIZE, corners);
     //this->display_calib_images(homography_frame, corners, "Homography checkerboard", found);
 
-    double d_pixels = sqrt(pow(corners[1].x - corners[0].x, 2) + pow(corners[1].y - corners[0].y, 2) * 1.0); 
+    //TODO use more points to better approximate checkboard_square_size_pixels
+    double checkboard_square_size_pixels = sqrt(pow(corners[1].x - corners[0].x, 2) + pow(corners[1].y - corners[0].y, 2) * 1.0); 
 
-    this->pix_to_mm = d_pixels / CHECKERBOARD_SQUARE_SIZE;
+    this->pix_to_mm = checkboard_square_size_pixels / CHECKERBOARD_SQUARE_SIZE;
 
-    cout << "\nLength of checkboard square in pixels: " << d_pixels << endl;
     cout << "Pixels per mm: " << pix_to_mm << endl;
 
     this->save_parameters(settings_file_path);
