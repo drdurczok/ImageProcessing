@@ -3,6 +3,8 @@
 image_calibration::image_calibration(){
     calibration_file_path = "../calibration/calib.yaml";
 	settings_file_path = "../calibration/settings.yaml";
+
+    this->get_settings();
 }
 
 // https://learnopencv.com/camera-calibration-using-opencv/

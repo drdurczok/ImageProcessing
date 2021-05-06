@@ -4,10 +4,8 @@ image_processing::image_processing(){
     calibration_file_path = "../calibration/calib.yaml";
 	settings_file_path = "../calibration/settings.yaml";
 
-	center[0] = Point2f(0,0);
-	center[1] = Point2f(0,0);
-	radius[0] = 0;
-	radius[1] = 0;
+	center = Point2f(0,0);
+	radius = 0;
 
 	this->read_camera_parameters(calibration_file_path);
 	this->read_camera_parameters(settings_file_path);
@@ -15,26 +13,12 @@ image_processing::image_processing(){
 	this->calculate_camera_coordinates();
 }
 
-Point2f image_processing::getCircleCenter(uint i){
-	if (i < sizeof(center)/sizeof(*center)){
-		return center[i];
-	}
-	else{
-		cout << "ERROR: Entered index for non-existant circle" << endl;
-	}
-
-	return Point2f(0,0);
+Point2f image_processing::getCircleCenter(){
+	return center;
 }
 
-float image_processing::getCircleRadius(uint i){
-	if (i < sizeof(radius)/sizeof(*radius)){
-		return radius[i];
-	}
-	else{
-		cout << "ERROR: Entered index for non-existant circle" << endl;
-	}
-
-	return 0;
+float image_processing::getCircleRadius(){
+	return radius;
 }
 
 Mat image_processing::filter(Mat input){
@@ -160,19 +144,47 @@ Mat image_processing::getCeilingPixels(Mat input){
 	return top_pixels;
 }
 
-//_________________________________________________________________
-Mat image_processing::position_detection(Mat img){
-	Mat mask, circle_bottom, circle_top;
+/*
+ * Copies only first pixel that appears at the bottom of the column as point coord
+ */
+vector<Point2f> image_processing::getFloorPixels_Points(Mat input){
+    vector<Point2f> bottom_pixels;
 	
-	mask = this->find_edge(img, FLOOR_PIXELS);
-	circle_bottom = ellipse_detection(mask, center[0], radius[0]);
+	for (uint i = 0; i < input.cols; i++){
+		for(uint j = input.rows-1; j > 0; j--){
+			if(input.at<uchar>(j,i) != 0){
+				bottom_pixels.push_back(Point2f(i,j));
+				break;
+			}
+		}
+	}
 
-	mask = this->find_edge(img, CEILING_PIXELS);
-	circle_top = ellipse_detection(mask, center[1], radius[1]);
+	return bottom_pixels;
+}
 
-	Mat circle = circle_bottom + circle_top;
 
-	return circle;
+/*
+ * Copies only first pixel that appears at the top of the column as point coord
+ */
+vector<Point2f> image_processing::getCeilingPixels_Points(Mat input){
+    vector<Point2f> top_pixels;
+	
+	for (uint i = 0; i < input.cols; i++){
+		for(uint j = 0; j < input.rows; j++){
+			if(input.at<uchar>(j,i) != 0){
+				top_pixels.push_back(Point2f(i,j));
+				break;
+			}
+		}
+	}
+
+	return top_pixels;
+}
+
+//_________________________________________________________________
+void image_processing::calculate_circle_dimensions(Mat img){
+	Mat mask = this->find_edge(img, FLOOR_PIXELS);
+	ellipse_detection(mask, center, radius);
 }
 
 Mat image_processing::ellipse_detection(Mat mask, Point2f& center, float& radius){
@@ -311,39 +323,10 @@ Mat image_processing::undistort(Mat img){
 	Mat output;
 	remap(img, output, this->mapx, this->mapy, INTER_LINEAR);
 
-	// crop the image
-	//x, y, w, h = roi;
-	//dst = dst[y:y+h, x:x+w]
-	//cv.imwrite('calibresult.png', dst)
-
 	return output;
 }
 
-uint image_processing::pixel_to_distance(uint pixels){
-	/*	Calculates the distance in mm from the number of pixels from the bottom of the screen.
-	 *	
-	 *	Formula:
-	 *		distance = H * tan( min_camera_angle +/- pixels / image_size  * camera_viewing_angle )
-	 *			H - height of camera lens
-	 *			pixels - number of pixels from bottom of image
-	 *			camera_viewing_angle - total viewing angles of camera
-	 *
-	 *		min_camera_angle = camera_angle - camera_viewing_angle / 2
-	 *			camera_angle - angle of camera lens to perpendicular of floor
-	 *			
-	 */
-
-	float H = 200.0; 					 //[mm]
-	float camera_viewing_angle = 40.0; 	 //[deg]
-	float image_size = 320.0;
-	float camera_angle = 30.0;			 //[deg]
-
-	double min_camera_angle = camera_angle - camera_viewing_angle / 2;
-
-	const double to_rad = PI / 180.0;
-
-	return H * tan( (min_camera_angle + pixels / image_size * camera_viewing_angle) * to_rad );
-}
+//_________________________________________________________________
 
 Point2f image_processing::homography_calc(Point2f pixel){
     /*
