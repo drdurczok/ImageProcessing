@@ -4,7 +4,7 @@ image_processing::image_processing(){
     calibration_file_path = "../calibration/calib.yaml";
 	settings_file_path = "../calibration/settings.yaml";
 
-	center = Point2f(0,0);
+	HCenter = Point2f(0,0);
 	radius = 0;
 
 	this->read_camera_parameters(calibration_file_path);
@@ -14,7 +14,7 @@ image_processing::image_processing(){
 }
 
 Point2f image_processing::getCircleCenter(){
-	return center;
+	return HCenter;
 }
 
 float image_processing::getCircleRadius(){
@@ -182,12 +182,17 @@ vector<Point2f> image_processing::getCeilingPixels_Points(Mat input){
 }
 
 //_________________________________________________________________
-void image_processing::calculate_circle_dimensions(Mat img){
+Mat image_processing::calculate_circle_dimensions(Mat img){
 	Mat mask = this->find_edge(img, FLOOR_PIXELS);
-	ellipse_detection(mask, center, radius);
+	ellipse_detection(mask);
+
+	return mask;
 }
 
-Mat image_processing::ellipse_detection(Mat mask, Point2f& center, float& radius){
+Mat image_processing::ellipse_detection(Mat mask){
+	Point2f center;
+	float   radius;
+
     Mat output = Mat::zeros(mask.rows, mask.cols, CV_8UC1);
 
 	vector<Point2f> edgePositions;
@@ -208,6 +213,9 @@ Mat image_processing::ellipse_detection(Mat mask, Point2f& center, float& radius
         //cout << "circle with center: " << center << " radius: " << radius << " inliers: " <<  cPerc*100.0f  << "%" << endl;
         circle(output, center, radius, Scalar(255,0,0),1);
 	}
+
+	this->HCenter = this->transform_to_homography_coord(center);
+	this->radius = radius;
 
 	return output;
 }
@@ -246,6 +254,7 @@ float image_processing::verifyCircle(Mat dt, Point2f center, float radius){
  *	Calculates center of circle and radius based off 3-points
  */
 inline void image_processing::getCircle(Point2f& p1, Point2f& p2, Point2f& p3, Point2f& center, float& radius){
+	cout << "Point 1: " << p1 << "\nPoint 2: " << p2 << "\nPoint 3: " << p3 << endl;
 	float x1 = p1.x;
 	float x2 = p2.x;
 	float x3 = p3.x;
@@ -262,7 +271,6 @@ inline void image_processing::getCircle(Point2f& p1, Point2f& p2, Point2f& p3, P
 
 	radius = sqrt((center.x-x1)*(center.x-x1) + (center.y-y1)*(center.y-y1));
 }
-
 
 /*
  *	Get three points of arc that will be used to calculate circle
@@ -284,20 +292,40 @@ std::vector<cv::Point2f> image_processing::getCirclePoints(Mat binaryImage){
 		}
 	}
 
+	sort(pointPositions.begin(), pointPositions.end(), [](const Point2f &a, const Point2f &b) {
+	    return (a.x < b.x);
+	});
+
+	cout << pointPositions << endl;
+
 	//TODO improve decision method of choosing arc points
-    unsigned int idx1 = rand()%pointPositions.size();
-    unsigned int idx2 = rand()%pointPositions.size();
-    unsigned int idx3 = rand()%pointPositions.size();
+	//Method 1: choose three random points
+    //unsigned int idx1 = rand()%pointPositions.size();
+    //unsigned int idx2 = rand()%pointPositions.size();
+    //unsigned int idx3 = rand()%pointPositions.size();
+
+   	//Method 2: choose from three distinct segments of curve
+   	uint size = pointPositions.size()/6;
+    unsigned int idx1 = (rand()%size);
+    unsigned int idx2 = (rand()%size) + 2*size;
+    unsigned int idx3 = (rand()%size) + 4*size;
+
+
 
    	std::vector<cv::Point2f> edgePositions;
    	edgePositions.push_back(pointPositions[idx1]);
    	edgePositions.push_back(pointPositions[idx2]);
    	edgePositions.push_back(pointPositions[idx3]);
 
-
 	return edgePositions;
 }
 
+Point2f image_processing::transform_to_homography_coord(Point2f center){
+	return center;
+}
+
+
+//_________________________________________________________________
 void image_processing::read_camera_parameters(string path){
 	cv::FileStorage file(path, cv::FileStorage::READ);
 	if (path == calibration_file_path){
@@ -369,9 +397,12 @@ void image_processing::calculate_camera_coordinates(){
     cameraPosition = -R.t() * this->tvec;
 
     this->camera_coordinates = Point2f(cameraPosition.at<double>(0), cameraPosition.at<double>(1));
-
-    cout << this->camera_coordinates << endl;
 }
+
+Point2f image_processing::get_camera_coordinates(){
+	return this->camera_coordinates;
+}
+
 
 double image_processing::distance_camera_to_pixel(Point2f pixel){
 	return sqrt(pow(pixel.x - this->camera_coordinates.x, 2) + pow(pixel.y - this->camera_coordinates.y, 2) * 1.0) * this->pix_to_mm; 
@@ -382,4 +413,8 @@ Mat image_processing::draw_point_on_frame(Mat frame, Point2f pixel){
 	circle(frame, pixel, 6, (0, 0, 255), -1);
 
 	return frame;
+}
+
+double image_processing::get_pix_to_mm(){
+	return this->pix_to_mm;
 }

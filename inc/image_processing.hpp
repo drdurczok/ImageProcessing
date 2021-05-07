@@ -16,9 +16,9 @@ class image_processing {
     image_processing();
     Mat undistort(Mat); //TODO: Move to privete after finished testing.
 
-    Mat ellipse_detection(Mat, Point2f&, float&);
+    Mat ellipse_detection(Mat);
 
-    void calculate_circle_dimensions(Mat);
+    Mat calculate_circle_dimensions(Mat);
 
     Point2f getCircleCenter();
     float   getCircleRadius();
@@ -33,6 +33,7 @@ class image_processing {
     Point2f homography_calc(Point2f);
     Mat get_homography_frame(Mat);
     Mat get_homography_origin_frame(Mat);
+    Point2f get_camera_coordinates();
 
     //Distance Calculations
     double distance_camera_to_pixel(Point2f);
@@ -41,11 +42,13 @@ class image_processing {
 
     Mat distance_to_edge(Mat);
 
+    double get_pix_to_mm();
+
   private:
     string calibration_file_path;
     string settings_file_path;
 
-    Point2f center;
+    Point2f HCenter;
     float   radius;
 
     //Filters
@@ -57,6 +60,7 @@ class image_processing {
     float verifyCircle(Mat, Point2f, float);
     void getCircle(Point2f&, Point2f&, Point2f&, Point2f&, float&);
     vector<Point2f> getCirclePoints(Mat binaryImage);
+    Point2f transform_to_homography_coord(Point2f);
 
     //Undistortion
     Mat cameraMatrix;

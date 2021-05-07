@@ -9,9 +9,16 @@ class sumo_algo {
     sumo_algo();
 
     Mat distance_to_edge(Mat);
+    Mat distance_to_center(Mat);
+
+    Mat calculate_ring_center(Mat);
 
   private:
-    image_processing img_proc;  
+    image_processing img_proc;
+
+    Mat TotalLeastSquares(vector<Point2f>);
+    vector<Point> get_line_points(Mat, Mat);
+
 };
 
 #endif

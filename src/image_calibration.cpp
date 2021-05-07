@@ -53,6 +53,8 @@ bool image_calibration::get_settings(){
     this->read_parameters(settings_file_path);
     this->read_parameters(calibration_file_path);
 
+    this->create_ring();
+
     return true;
 }
 
@@ -221,6 +223,22 @@ void image_calibration::find_homography_matrix(){
     cout << "Pixels per mm: " << pix_to_mm << endl;
 
     this->save_parameters(settings_file_path);
+}
+
+void image_calibration::create_ring(){
+    double inner_ring_diameter_pixels = 1540 / this->pix_to_mm;
+    double outer_ring_diameter_pixels = 1560 / this->pix_to_mm;
+
+    Mat ring = Mat::zeros(outer_ring_diameter_pixels, outer_ring_diameter_pixels, CV_8UC1);
+
+    Point2f center = Point2f(outer_ring_diameter_pixels/2, outer_ring_diameter_pixels/2);
+    
+    //Outer ring
+    circle(ring, center, outer_ring_diameter_pixels/2, (0,0,255), -1);
+    //Inner ring
+    circle(ring, center, inner_ring_diameter_pixels/2, (0,0,0), -1);
+
+    imwrite("../calibration/Dohyo.jpg", ring);
 }
 
 
