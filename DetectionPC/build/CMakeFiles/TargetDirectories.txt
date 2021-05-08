@@ -1,0 +1,3 @@
+/home/dan/GitHub/ImageProcessing/DetectionPC/build/CMakeFiles/rebuild_cache.dir
+/home/dan/GitHub/ImageProcessing/DetectionPC/build/CMakeFiles/edit_cache.dir
+/home/dan/GitHub/ImageProcessing/DetectionPC/build/CMakeFiles/detection.dir
