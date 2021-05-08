@@ -13,8 +13,19 @@ class sumo_algo {
 
     Mat calculate_ring_center(Mat);
 
+    Mat draw_dohyo();
+
   private:
     image_processing img_proc;
+
+    struct position {
+	  double distance_to_center;
+	} robot;
+
+
+	double outer_ring_diameter_pixels = 1550;
+    double outer_ring_radius_pixels = outer_ring_diameter_pixels / 2;
+    Point2f circle_center;
 
     Mat TotalLeastSquares(vector<Point2f>);
     vector<Point> get_line_points(Mat, Mat);

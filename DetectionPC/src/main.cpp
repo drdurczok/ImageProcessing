@@ -12,18 +12,18 @@ image_core img_core(2,2);
 sumo_algo sumo;
 
 int main(){
-	string path_to_image = "../samples/images/105.jpg";
+	string path_to_image = "../samples/5.jpg";
 	//string path_to_image = "../calibration/homography.jpg";
 
 	Mat image = img_core.load_image(path_to_image);
 
-	//Mat HFrame_processed = sumo.distance_to_edge(image);
-	//Mat HFrame_processed = sumo.distance_to_center(image);
 	Mat HFrame_processed = sumo.calculate_ring_center(image);
+
+	Mat Dohyo = sumo.draw_dohyo();
   	
   	img_core.display_image(0, image);
   	img_core.display_image(1, HFrame_processed);
-
+  	img_core.display_image(3, Dohyo);
 
  	waitKey(0);
 

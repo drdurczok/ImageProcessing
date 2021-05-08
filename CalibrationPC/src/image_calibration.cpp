@@ -103,7 +103,7 @@ void image_calibration::calibrate(){
         // If desired number of corners are found in the image then success = true  
         success = findChessboardCorners(gray, CHECKERBOARD_SIZE, corner_pts, CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FAST_CHECK | CALIB_CB_NORMALIZE_IMAGE);
 
-        //this->display_calib_images(frame, corner_pts, to_string(i), success);
+        this->display_calib_images(frame, corner_pts, to_string(i), success);
 
         //If desired number of corner are detected, we refine the pixel coordinates and display them on the images of checker board
         if(success){
@@ -141,7 +141,7 @@ void image_calibration::calibrate(){
 //Replacement for SolvePnP()
 void image_calibration::find_homography_matrix(){
     //Get image
-    string path = "../calibration/homography.jpg";
+    string path = "../calibration/homography_imgs/3.jpg";
     Mat frame = imread(path);
 
 
@@ -149,8 +149,18 @@ void image_calibration::find_homography_matrix(){
 
     //Calculate object points
     vector<Point3f> objectPoints;
+    /*
+    //Start from last point
     for( int i = CHECKERBOARD[1]; i > 0; i-- ){
         for( int j = CHECKERBOARD[0]; j > 0; j-- ){
+            objectPoints.push_back(Point3f(float(j*CHECKERBOARD_SQUARE_SIZE),
+                                      float(i*CHECKERBOARD_SQUARE_SIZE), 0));
+        }
+    }
+    */
+    //Start from first point
+    for( int i = 0; i < CHECKERBOARD[1]; i++ ){
+        for( int j = 0; j < CHECKERBOARD[0]; j++ ){
             objectPoints.push_back(Point3f(float(j*CHECKERBOARD_SQUARE_SIZE),
                                       float(i*CHECKERBOARD_SQUARE_SIZE), 0));
         }
@@ -227,7 +237,7 @@ void image_calibration::find_homography_matrix(){
 
 void image_calibration::create_ring(){
     double inner_ring_diameter_pixels = 1540 / this->pix_to_mm;
-    double outer_ring_diameter_pixels = 1560 / this->pix_to_mm;
+    double outer_ring_diameter_pixels = 1550 / this->pix_to_mm;
 
     Mat ring = Mat::zeros(outer_ring_diameter_pixels, outer_ring_diameter_pixels, CV_8UC1);
 
@@ -331,10 +341,10 @@ void image_calibration::display_calib_images(Mat frame, vector<Point2f> corner_p
     // Displaying the detected corner points on the checker board
     drawChessboardCorners(frame, CHECKERBOARD_SIZE, corner_pts, success);
     
-    cv::imshow(name, frame);
-    cv::waitKey(0);
+    imshow(name, frame);
+    waitKey(0);
     
-    cv::destroyAllWindows();
+    destroyAllWindows();
 }
 
 void image_calibration::get_focal_length_mm(){
