@@ -13,9 +13,12 @@ class sumo_algo {
     Mat distance_to_edge(Mat);
     Mat distance_to_center(Mat);
 
-    Mat     calculate_ring_center(Mat);
+	Point2f find_robot_position(Mat);
+
+    void    calculate_ring_center(Mat);
     Point2f calculate_robot_position();
 
+	Mat draw_homography_frame(Mat);
     Mat draw_dohyo();
 
   private:
@@ -25,7 +28,8 @@ class sumo_algo {
 	  double distance_to_center;
 	} robot;
 
-	Mat line_normal = Mat::zeros(2, 2, CV_64F);
+	Mat line_tangent = Mat::zeros(2, 2, CV_64F);
+	Mat line_normal  = Mat::zeros(2, 2, CV_64F);
 
 	double outer_ring_diameter_pixels = 1550;
     double outer_ring_radius_pixels = outer_ring_diameter_pixels / 2;

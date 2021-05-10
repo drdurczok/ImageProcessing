@@ -4,6 +4,12 @@ sumo_algo::sumo_algo(){
 
 }
 
+Point2f sumo_algo::find_robot_position(Mat image){
+	this->calculate_ring_center(image);
+	Point2f robot_point = this->calculate_robot_position();
+
+	return robot_point;
+}
 
 /*
  *	STEP 1	-	Calculate the slope of the tangent
@@ -20,7 +26,7 @@ sumo_algo::sumo_algo(){
  *		x1 = x0 +- sqrt( distance^2 / (1 + slope^2) ) 
  *		y1 = slope * x1 + offset
  */
-Mat sumo_algo::calculate_ring_center(Mat image){
+void sumo_algo::calculate_ring_center(Mat image){
 	Mat HFrame = img_proc.get_homography_frame(image);
 	Mat img_filtered = img_proc.filter(HFrame);
 	//TODO Add check if the filtered image has sensible information (one clump)
@@ -34,20 +40,20 @@ Mat sumo_algo::calculate_ring_center(Mat image){
  	Mat line_floor = this->TotalLeastSquares(img_floor);
 	Mat line_ceil = this->TotalLeastSquares(img_ceil);
 
-	Mat line_tangent = Mat::zeros(2, 2, CV_64F);
+	this->line_tangent = Mat::zeros(2, 2, CV_64F);
 	double tolerance = 0.1;
 
 	if (abs(line_floor.at<double>(1, 0) - line_ceil.at<double>(1, 0)) < tolerance ){
-		line_tangent.at<double>(1,0) = (line_floor.at<double>(1, 0) + line_ceil.at<double>(1, 0)) / 2;
-		line_tangent.at<double>(0,0) = (line_floor.at<double>(0, 0) + line_ceil.at<double>(0, 0)) / 2;
+		this->line_tangent.at<double>(1,0) = (line_floor.at<double>(1, 0) + line_ceil.at<double>(1, 0)) / 2;
+		this->line_tangent.at<double>(0,0) = (line_floor.at<double>(0, 0) + line_ceil.at<double>(0, 0)) / 2;
 	}
 	else{
 		cout << "WARNING: The calculated tangents have a large disparity. Defaulting to floor values." << endl;
-		line_tangent.at<double>(1,0) = line_floor.at<double>(1, 0);
-		line_tangent.at<double>(0,0) = line_floor.at<double>(0, 0);
+		this->line_tangent.at<double>(1,0) = line_floor.at<double>(1, 0);
+		this->line_tangent.at<double>(0,0) = line_floor.at<double>(0, 0);
 	}
 
-	vector<Point> line_tangent_points = this->get_line_points(HFrame, line_tangent);
+	vector<Point> line_tangent_points = this->get_line_points(HFrame, this->line_tangent);
 
 	//Remove points that are out of image frame from top
 	for (uint i = 0; i < line_tangent_points.size(); i++){
@@ -122,7 +128,7 @@ Mat sumo_algo::calculate_ring_center(Mat image){
 
 	tangent_point = tangent_points[ tangent_points.size()/2 ];
 
-	line_tangent.at<double>(0,0) = line_tangent.at<double>(0,0) - tangent_shift;
+	this->line_tangent.at<double>(0,0) = this->line_tangent.at<double>(0,0) - tangent_shift;
 
 	/*Debug Draw Tangent
 	cout << "Tangent point: " << tangent_point << " [x, y]" << endl;
@@ -141,9 +147,9 @@ Mat sumo_algo::calculate_ring_center(Mat image){
 	this->line_normal = Mat::zeros(2, 2, CV_64F);
 
 	//Condition to avoid dividing by zero
-	if (line_tangent.at<double>(1,0) != 0){
+	if (this->line_tangent.at<double>(1,0) != 0){
 		//Calculate slope of normal
-		this->line_normal.at<double>(1,0) = -1 / line_tangent.at<double>(1,0);
+		this->line_normal.at<double>(1,0) = -1 / this->line_tangent.at<double>(1,0);
 	}
 	else {
 		cout << "ERROR: Dividing by zero (line_tangent A)." << endl;
@@ -177,16 +183,6 @@ Mat sumo_algo::calculate_ring_center(Mat image){
 	//START DISTANCE TO ROBOT
 	this->robot.distance_to_center = img_proc.distance_camera_to_pixel(this->circle_center);
 	//END DISTANCE TO ROBOT
-
-	//Draw tangent
-	line_tangent_points = this->get_line_points(HFrame, line_tangent);
-	polylines(HFrame, line_tangent_points, false, Scalar(255, 0, 0), 2, 8);
-	//Draw normal
-	vector<Point> line_normal_points = this->get_line_points(HFrame, line_normal);
-	polylines(HFrame, line_normal_points, false, Scalar(255, 0, 0), 2, 8);
-
-	return HFrame;
-
 }
 
 Point2f sumo_algo::calculate_robot_position(){
@@ -265,6 +261,19 @@ vector<Point> sumo_algo::get_fov_line_points(Mat image, Point2f point, double an
 	}
 
 	return line_points;
+}
+
+Mat sumo_algo::draw_homography_frame(Mat image){
+	Mat HFrame = img_proc.get_homography_frame(image);
+
+	//Draw tangent
+	vector<Point> line_tangent_points = this->get_line_points(HFrame, this->line_tangent);
+	polylines(HFrame, line_tangent_points, false, Scalar(255, 0, 0), 2, 8);
+	//Draw normal
+	vector<Point> line_normal_points = this->get_line_points(HFrame, this->line_normal);
+	polylines(HFrame, line_normal_points, false, Scalar(255, 0, 0), 2, 8);
+
+	return HFrame;
 }
 
 Mat sumo_algo::draw_dohyo(){

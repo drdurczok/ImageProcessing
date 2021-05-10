@@ -25,8 +25,8 @@ uint num_of_images = 35;
 int main(){
 	auto t_start = high_resolution_clock::now();
 
-	example_03();
-	//example_04();
+	//example_03();
+	example_04();
 
   	auto t_end = high_resolution_clock::now();
 
@@ -45,8 +45,7 @@ void esp_main(){
 	//Take picture
 	Mat image;
 
-	sumo.calculate_ring_center(image);
-	Point2f robot_position = sumo.calculate_robot_position();
+	Point2f robot_position = sumo.find_robot_position(image);
   	
 	//Send to STM32 through uart
 }
@@ -106,7 +105,10 @@ void example_03(){
 	//string path_to_image = "../calibration/homography.jpg";
 
 	Mat image = img_core.load_image(path_to_image);
-	Mat HFrame_processed = sumo.calculate_ring_center(image);
+	sumo.calculate_ring_center(image);
+	sumo.calculate_robot_position();
+	
+	Mat HFrame_processed = sumo.draw_homography_frame(image);
 	Mat Dohyo = sumo.draw_dohyo();
   	
   	img_core.display_image(0, image);
@@ -133,7 +135,10 @@ void example_04(){
 		path_to_image = "../samples/" + to_string(i) + ".jpg";
 
 		image = img_core.load_image(path_to_image);
-		HFrame_processed = sumo.calculate_ring_center(image);
+		sumo.calculate_ring_center(image);
+		sumo.calculate_robot_position();
+		
+		HFrame_processed = sumo.draw_homography_frame(image);
 		Dohyo = sumo.draw_dohyo();
 	  	
 	  	img_core.display_image(0, image);
@@ -160,7 +165,10 @@ void example_05(){
 		path_to_image = "../samples/" + to_string(i) + ".jpg";
 
 		image = img_core.load_image(path_to_image);
-		HFrame_processed = sumo.calculate_ring_center(image);
+		sumo.calculate_ring_center(image);
+		sumo.calculate_robot_position();
+
+		HFrame_processed = sumo.draw_homography_frame(image);
 		Dohyo = sumo.draw_dohyo();
 
 		path_to_results = "../results/" + to_string(i) + ".jpg";
