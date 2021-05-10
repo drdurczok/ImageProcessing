@@ -23,6 +23,8 @@ sumo_algo::sumo_algo(){
 Mat sumo_algo::calculate_ring_center(Mat image){
 	Mat HFrame = img_proc.get_homography_frame(image);
 	Mat img_filtered = img_proc.filter(HFrame);
+	//TODO Add check if the filtered image has sensible information (one clump)
+
 	vector<Point2f> img_floor = img_proc.getFloorPixels_Points(img_filtered);
 	vector<Point2f> img_ceil = img_proc.getCeilingPixels_Points(img_filtered);
 
@@ -136,23 +138,23 @@ Mat sumo_algo::calculate_ring_center(Mat image){
 	//START FIND NORMAL
 	cout << "INFO: Calculating normal." << endl;
 
-	Mat line_normal = Mat::zeros(2, 2, CV_64F);
+	this->line_normal = Mat::zeros(2, 2, CV_64F);
 
 	//Condition to avoid dividing by zero
 	if (line_tangent.at<double>(1,0) != 0){
 		//Calculate slope of normal
-		line_normal.at<double>(1,0) = -1 / line_tangent.at<double>(1,0);
+		this->line_normal.at<double>(1,0) = -1 / line_tangent.at<double>(1,0);
 	}
 	else {
 		cout << "ERROR: Dividing by zero (line_tangent A)." << endl;
 	}
 
 	//Calculate offset of normal through tangent point
-	line_normal.at<double>(0,0) = tangent_point.y - line_normal.at<double>(1,0) * tangent_point.x;
+	this->line_normal.at<double>(0,0) = tangent_point.y - this->line_normal.at<double>(1,0) * tangent_point.x;
 
 	/*Debug Draw Normal
-	cout << "Normal: y = " << line_normal.at<double>(1,0) << "x + " << line_normal.at<double>(0,0) << endl;
-	vector<Point> line_normal_points = this->get_line_points(HFrame, line_normal);
+	cout << "Normal: y = " << this->line_normal.at<double>(1,0) << "x + " << this->line_normal.at<double>(0,0) << endl;
+	vector<Point> line_normal_points = this->get_line_points(HFrame, this->line_normal);
 	polylines(HFrame, line_normal_points, false, Scalar(255, 0, 0), 2, 8);
 	imshow("Tangent", HFrame);
 	waitKey(0);
@@ -161,13 +163,13 @@ Mat sumo_algo::calculate_ring_center(Mat image){
 
 
 	//START FIND CIRCLE CENTER 
-    double sqr = sqrt(pow(this->outer_ring_radius_pixels,2) / (1 + pow(line_normal.at<double>(1,0),2)));
+    double sqr = sqrt(pow(this->outer_ring_radius_pixels,2) / (1 + pow(this->line_normal.at<double>(1,0),2)));
 
 	this->circle_center.x = tangent_point.x - sqr;
-    this->circle_center.y = this->circle_center.x * line_normal.at<double>(1,0) + line_normal.at<double>(0,0);
+    this->circle_center.y = this->circle_center.x * this->line_normal.at<double>(1,0) + this->line_normal.at<double>(0,0);
     if (this->circle_center.y < 0){
     	this->circle_center.x = tangent_point.x + sqr;
-        this->circle_center.y = this->circle_center.x * line_normal.at<double>(1,0) + line_normal.at<double>(0,0);
+        this->circle_center.y = this->circle_center.x * this->line_normal.at<double>(1,0) + this->line_normal.at<double>(0,0);
     }
 	//END FIND CIRCLE CENTER
 
@@ -175,8 +177,6 @@ Mat sumo_algo::calculate_ring_center(Mat image){
 	//START DISTANCE TO ROBOT
 	this->robot.distance_to_center = img_proc.distance_camera_to_pixel(this->circle_center);
 	//END DISTANCE TO ROBOT
-
-    cout << "Tangent point:            " << tangent_point << endl;
 
 	//Draw tangent
 	line_tangent_points = this->get_line_points(HFrame, line_tangent);
@@ -188,6 +188,22 @@ Mat sumo_algo::calculate_ring_center(Mat image){
 	return HFrame;
 
 }
+
+Point2f sumo_algo::calculate_robot_position(){
+    //Find robot as a point
+    cout << "INFO: Calculating robot position." << endl;
+    Point2f camera_point_homography = img_proc.get_camera_coordinates();
+
+    int cent_x = this->outer_ring_radius_pixels - this->circle_center.x;
+    int cent_y = this->outer_ring_radius_pixels - this->circle_center.y;
+
+    Point2f robot_point = Point2f(
+    	cent_x + camera_point_homography.x ,
+    	cent_y + camera_point_homography.y);
+
+    return robot_point;
+}
+
 
 Mat sumo_algo::TotalLeastSquares(vector<Point2f> points) {
 	//Build A matrix 
@@ -229,27 +245,53 @@ vector<Point> sumo_algo::get_line_points(Mat image, Mat X){
     return lines;
 }
 
+vector<Point> sumo_algo::get_fov_line_points(Mat image, Point2f point, double angle){
+	Mat line = Mat::zeros(2, 2, CV_64F);
+	line.at<double>(1,0) = tan(angle);
+	line.at<double>(0,0) = point.y - line.at<double>(1,0) * point.x;
+
+	vector<Point> line_points;
+	if (line.at<double>(1,0) < 0){
+		for (int x = point.x; x < image.size().width; x++){	// y = b + ax;
+			double y = line.at<double>(0, 0) + line.at<double>(1, 0)*x;
+			line_points.push_back(Point(x, y));
+		}
+	}
+	else{
+		for (int x = point.x; x > 0; x--){					// y = b + ax;
+			double y = line.at<double>(0, 0) + line.at<double>(1, 0)*x;
+			line_points.push_back(Point(x, y));
+		}
+	}
+
+	return line_points;
+}
+
 Mat sumo_algo::draw_dohyo(){
 	string path_to_image = "../calibration/Dohyo.jpg";
     Mat dohyo = imread(path_to_image, IMREAD_COLOR);
 
-    Point2f camera_point_homography = img_proc.get_camera_coordinates();
-
-    int cent_x = this->outer_ring_radius_pixels - this->circle_center.x;
-    int cent_y = this->outer_ring_radius_pixels - this->circle_center.y;
-
-    Point2f robot_point = Point2f(
-    	cent_x + camera_point_homography.x ,
-    	cent_y + camera_point_homography.y);
+    Point2f robot_point= this->calculate_robot_position();
 
     circle(dohyo, robot_point, 20, (0, 0, 255), -1);
 	//namedWindow("dohyo", WINDOW_FREERATIO);	
     //imshow("dohyo", dohyo);
     //waitKey(0);
 
-    cout << "Circle center:            " << this->circle_center << endl;
-    cout << "Robot Point:              " << robot_point   << endl;	
+    //cout << "Circle center:            " << this->circle_center << endl;
+    //cout << "Robot Point:              " << robot_point   << endl;	
     cout << "Robot distance to center: " << this->robot.distance_to_center/10 << " cm" << endl;
+
+	//Draw viewing angle lines
+	double viewing_angle = 40 * PI/180; //deg to rad
+	double view_ang_1 = PI/2 + viewing_angle/2;
+	double view_ang_2 = PI/2 - viewing_angle/2;
+
+	vector<Point> line_view_1_points = get_fov_line_points(dohyo, robot_point, view_ang_1);
+	polylines(dohyo, line_view_1_points, false, Scalar(255, 0, 0), 2, 8);
+
+	vector<Point> line_view_2_points = get_fov_line_points(dohyo, robot_point, view_ang_2);
+	polylines(dohyo, line_view_2_points, false, Scalar(255, 0, 0), 2, 8);
 
     return dohyo;
 }

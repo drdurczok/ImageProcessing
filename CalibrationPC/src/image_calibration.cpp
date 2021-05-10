@@ -204,7 +204,7 @@ void image_calibration::find_homography_matrix(){
 
     solvePnP(objectPoints, corners, this->cameraMatrix, this->distCoeffs, this->rvec, this->tvec);
 
-    //Calculate normal plan
+    //Calculate normal plane
     Mat R;
     Rodrigues(this->rvec, R);
     Mat normal = R*(Mat_<double>(3,1) << 0, 0, 1);
@@ -236,8 +236,8 @@ void image_calibration::find_homography_matrix(){
 }
 
 void image_calibration::create_ring(){
-    double inner_ring_diameter_pixels = 1540 / this->pix_to_mm;
-    double outer_ring_diameter_pixels = 1550 / this->pix_to_mm;
+    double inner_ring_diameter_pixels = 1530 / this->pix_to_mm;
+    double outer_ring_diameter_pixels = 1540 / this->pix_to_mm;
 
     Mat ring = Mat::zeros(outer_ring_diameter_pixels, outer_ring_diameter_pixels, CV_8UC1);
 

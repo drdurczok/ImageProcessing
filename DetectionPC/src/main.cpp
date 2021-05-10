@@ -5,25 +5,35 @@
 #include "image_processing.cpp"
 #include "sumo_algo.cpp"
 
+//Measure system time
+#include <chrono>
+using std::chrono::high_resolution_clock;
+using std::chrono::duration;
+
 using namespace cv;
 using namespace std;
 
 image_core img_core(2,2);
 sumo_algo sumo;
 
+void example_03();
+void example_04();
+void example_05();
+
+uint num_of_images = 35;
+
 int main(){
-	string path_to_image = "../samples/5.jpg";
-	//string path_to_image = "../calibration/homography.jpg";
+	auto t_start = high_resolution_clock::now();
 
-	Mat image = img_core.load_image(path_to_image);
+	example_03();
+	//example_04();
 
-	Mat HFrame_processed = sumo.calculate_ring_center(image);
+  	auto t_end = high_resolution_clock::now();
 
-	Mat Dohyo = sumo.draw_dohyo();
-  	
-  	img_core.display_image(0, image);
-  	img_core.display_image(1, HFrame_processed);
-  	img_core.display_image(3, Dohyo);
+    /* Getting number of milliseconds as a double. */
+    duration<double, std::milli> ms_double = t_end - t_start;
+  	cout << "Execution time total:         " << ms_double.count() << "ms" << endl;
+  	cout << "Execution time avg per image: " << ms_double.count()/num_of_images << "ms" << endl;
 
  	waitKey(0);
 
@@ -31,6 +41,15 @@ int main(){
 }
 
 
+void esp_main(){
+	//Take picture
+	Mat image;
+
+	sumo.calculate_ring_center(image);
+	Point2f robot_position = sumo.calculate_robot_position();
+  	
+	//Send to STM32 through uart
+}
 
 
 //EXAMPLES
@@ -75,4 +94,76 @@ void example_02(){
 	img_core.display_image(1, image);
 
 	img_core.save_image("temp.jpg", image);
+}
+
+/* example_03
+ *	Process single image and display
+ */
+void example_03(){
+	uint image_i = 6;
+
+	String path_to_image = "../samples/" + to_string(image_i) + ".jpg";
+	//string path_to_image = "../calibration/homography.jpg";
+
+	Mat image = img_core.load_image(path_to_image);
+	Mat HFrame_processed = sumo.calculate_ring_center(image);
+	Mat Dohyo = sumo.draw_dohyo();
+  	
+  	img_core.display_image(0, image);
+  	img_core.display_image(1, HFrame_processed);
+  	img_core.display_image(3, Dohyo);
+
+ 	waitKey(0);
+}
+
+
+/* example_04
+ *	Process multiple images and display
+ */
+void example_04(){
+	string path_to_image;
+	string path_to_results;
+
+	Mat image;
+	Mat HFrame_processed;
+	Mat Dohyo;
+
+	for (uint i = 1; i < num_of_images; i++){
+		cout << "Image: " << i << endl;
+		path_to_image = "../samples/" + to_string(i) + ".jpg";
+
+		image = img_core.load_image(path_to_image);
+		HFrame_processed = sumo.calculate_ring_center(image);
+		Dohyo = sumo.draw_dohyo();
+	  	
+	  	img_core.display_image(0, image);
+	  	img_core.display_image(1, HFrame_processed);
+	  	img_core.display_image(3, Dohyo);
+
+	 	waitKey(0);
+  	}
+}
+
+/* example_05
+ *	Process multiple images and save
+ */
+void example_05(){
+	string path_to_image;
+	string path_to_results;
+
+	Mat image;
+	Mat HFrame_processed;
+	Mat Dohyo;
+
+	for (uint i = 1; i < num_of_images; i++){
+		cout << "Image: " << i << endl;
+		path_to_image = "../samples/" + to_string(i) + ".jpg";
+
+		image = img_core.load_image(path_to_image);
+		HFrame_processed = sumo.calculate_ring_center(image);
+		Dohyo = sumo.draw_dohyo();
+
+		path_to_results = "../results/" + to_string(i) + ".jpg";
+	  	img_core.save_image(path_to_results, Dohyo);
+  	}
 }

@@ -235,6 +235,10 @@ Point2f image_processing::homography_calc(Point2f pixel){
 
 Mat image_processing::get_homography_frame(Mat frame){
 	Mat homography_frame;
+
+	//Mat large_frame = Mat::zeros(frame.size().height*2, frame.size().width*2, CV_8UC3);
+	//frame.copyTo(large_frame(Rect((large_frame.cols - frame.cols)/2, (large_frame.rows - frame.rows)/2, frame.cols, frame.rows)));
+
     warpPerspective(frame, homography_frame, this->homographyMatrixInv, frame.size());
 
     return homography_frame;
@@ -267,7 +271,6 @@ double image_processing::distance_camera_to_pixel(Point2f pixel){
 }
 
 Mat image_processing::draw_point_on_frame(Mat frame, Point2f pixel){
-	cout << "Drawing circle" << endl;
 	circle(frame, pixel, 6, (0, 0, 255), -1);
 
 	return frame;
