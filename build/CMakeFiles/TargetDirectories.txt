@@ -1,3 +1,0 @@
-/home/dan/GitHub/ImageProcessing/build/CMakeFiles/edit_cache.dir
-/home/dan/GitHub/ImageProcessing/build/CMakeFiles/rebuild_cache.dir
-/home/dan/GitHub/ImageProcessing/build/CMakeFiles/untitled.dir
