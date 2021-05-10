@@ -47,6 +47,8 @@ image_processing.cpp
 /home/dan/GitHub/ImageProcessing/DetectionPC/src/image_processing.cpp
 sumo_algo.cpp
 /home/dan/GitHub/ImageProcessing/DetectionPC/src/sumo_algo.cpp
+chrono
+-
 
 /home/dan/GitHub/ImageProcessing/DetectionPC/src/sumo_algo.cpp
 ../inc/sumo_algo.hpp
