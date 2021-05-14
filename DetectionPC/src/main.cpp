@@ -56,7 +56,7 @@ void run(String path_to_image){
 
 	Point2f robot_position = sumo.find_robot_position(image);
 
-	cout << robot_position << endl;
+	//cout << robot_position << endl;
   	
 	//Send to STM32 through uart
 }
@@ -100,13 +100,13 @@ void benchmark(){
 	double temp_deviation = 0;
 	for (uint i = 0; i < num_of_images; i++){
 		temp_deviation = (ms_double[i].count()*1.0) - avg_execution;
-		avg_deviation += temp_deviation;
+		avg_deviation += abs(temp_deviation);
 
 		if (abs(max_deviation) < abs(temp_deviation)){
 			max_deviation = temp_deviation;
 		}
 	}
-	avg_deviation /= (num_of_images);
+	avg_deviation /= num_of_images;
 
     cout << fixed;
 	cout << setprecision(3);

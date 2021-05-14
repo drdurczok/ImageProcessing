@@ -6,14 +6,6 @@
 
 #IncludeRegexTransform: 
 
-/home/dan/GitHub/ImageProcessing/DetectionPC/inc/image_core.hpp
-opencv2/core.hpp
--
-opencv2/imgcodecs.hpp
--
-stdint.h
--
-
 /home/dan/GitHub/ImageProcessing/DetectionPC/inc/image_processing.hpp
 opencv2/core.hpp
 -
@@ -28,10 +20,6 @@ cmath
 
 /home/dan/GitHub/ImageProcessing/DetectionPC/inc/sumo_algo.hpp
 
-/home/dan/GitHub/ImageProcessing/DetectionPC/src/image_core.cpp
-../inc/image_core.hpp
-/home/dan/GitHub/ImageProcessing/DetectionPC/inc/image_core.hpp
-
 /home/dan/GitHub/ImageProcessing/DetectionPC/src/image_processing.cpp
 ../inc/image_processing.hpp
 /home/dan/GitHub/ImageProcessing/DetectionPC/inc/image_processing.hpp
@@ -41,8 +29,8 @@ opencv2/highgui.hpp
 -
 iostream
 -
-image_core.cpp
-/home/dan/GitHub/ImageProcessing/DetectionPC/src/image_core.cpp
+iomanip
+-
 image_processing.cpp
 /home/dan/GitHub/ImageProcessing/DetectionPC/src/image_processing.cpp
 sumo_algo.cpp

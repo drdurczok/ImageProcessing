@@ -72,6 +72,8 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
 -D BUILD_opencv_java=OFF \
 -D BUILD_opencv_python=OFF \
 -D BUILD_opencv_ts=OFF \
+-D ENABLE_NEON=ON \
+-D ENABLE_VFPV3=ON \
 -D CMAKE_CXX_FLAGS="-std=c++17" ..
  	
 make -j4
@@ -81,3 +83,12 @@ make install
 nohup make -j4 & exit
 
 tail -f nohup.out
+
+# _____________________________________________________________
+# NanoPi Neo Helpfull commands:
+
+# Set CPU Freq
+cpu_freq -s 1008000
+
+# Read CPU parameters (including temperature)
+cpu_freq
