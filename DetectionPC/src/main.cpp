@@ -68,12 +68,12 @@ void benchmark(){
 	Mat image;
 	Point2f robot_position;
 
-	chrono::time_point t_start  = high_resolution_clock::now();
-	chrono::time_point t_end  = high_resolution_clock::now();
+	auto t_start  = high_resolution_clock::now();
+	auto t_end  = high_resolution_clock::now();
 	duration<double, std::milli> ms_double[num_of_images];
 
 
-	chrono::time_point t_start_total  = high_resolution_clock::now();
+	auto t_start_total  = high_resolution_clock::now();
 
 	for(uint i = 1; i <= num_of_images; i++){
 		t_start = high_resolution_clock::now();
@@ -89,7 +89,7 @@ void benchmark(){
 	}
 
 
-	chrono::time_point t_end_total  = high_resolution_clock::now();
+	auto t_end_total  = high_resolution_clock::now();
 	duration<double, std::milli> ms_double_total = t_end_total - t_start_total;
 
 	double avg_execution = ms_double_total.count()/num_of_images;
