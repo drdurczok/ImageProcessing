@@ -22,7 +22,9 @@ float image_processing::getCircleRadius(){
 }
 
 Mat image_processing::filter(Mat input){
+	#ifdef DEBUG
 	cout << "INFO: Filtering image." << endl;
+	#endif
 	if (input.empty()){
 		cout << "Error: missing image\n\n" << endl;
 	}

@@ -1,39 +1,44 @@
+//#define DEBUG
+#define BENCHMARK
+
 #include <opencv2/highgui.hpp>
 #include <iostream>
+#include <iomanip>
 
-#include "image_core.cpp"
+//#include "image_core.cpp"
 #include "image_processing.cpp"
 #include "sumo_algo.cpp"
 
+using namespace cv;
+using namespace std;
+
+#ifdef BENCHMARK
 //Measure system time
 #include <chrono>
 using std::chrono::high_resolution_clock;
 using std::chrono::duration;
 
-using namespace cv;
-using namespace std;
+void benchmark();
+#endif
 
+#ifdef DEBUG
 image_core img_core(2,2);
+#endif
+
 sumo_algo sumo;
 
-void example_03();
-void example_04();
-void example_05();
+void run(String);
 
 uint num_of_images = 35;
 
 int main(){
-	auto t_start = high_resolution_clock::now();
 
-	//example_03();
-	example_04();
-
-  	auto t_end = high_resolution_clock::now();
-
-    /* Getting number of milliseconds as a double. */
-    duration<double, std::milli> ms_double = t_end - t_start;
-  	cout << "Execution time total:         " << ms_double.count() << "ms" << endl;
-  	cout << "Execution time avg per image: " << ms_double.count()/num_of_images << "ms" << endl;
+	#ifndef BENCHMARK
+	String path_to_image = "../samples/26.jpg";
+	run();
+	#else
+	benchmark();
+	#endif
 
  	waitKey(0);
 
@@ -41,14 +46,77 @@ int main(){
 }
 
 
-void esp_main(){
+void run(String path_to_image){
 	//Take picture
-	Mat image;
+
+	Mat image = imread(path_to_image, IMREAD_COLOR);
+    if( image.empty() ){
+        cout << "Could not open or find the image" << endl;
+    }
 
 	Point2f robot_position = sumo.find_robot_position(image);
+
+	cout << robot_position << endl;
   	
 	//Send to STM32 through uart
 }
+
+#ifdef BENCHMARK
+void benchmark(){
+	cout << "Benchmarks: " << endl;
+	String path_to_image;
+	Mat image;
+	Point2f robot_position;
+
+	chrono::time_point t_start  = high_resolution_clock::now();
+	chrono::time_point t_end  = high_resolution_clock::now();
+	duration<double, std::milli> ms_double[num_of_images];
+
+
+	chrono::time_point t_start_total  = high_resolution_clock::now();
+
+	for(uint i = 1; i <= num_of_images; i++){
+		t_start = high_resolution_clock::now();
+
+		path_to_image = "../samples/" + to_string(i) + ".jpg";
+
+		run(path_to_image);
+
+		t_end = high_resolution_clock::now();
+
+		/* Getting number of milliseconds as a double. */
+		ms_double[i-1] = t_end - t_start;	
+	}
+
+
+	chrono::time_point t_end_total  = high_resolution_clock::now();
+	duration<double, std::milli> ms_double_total = t_end_total - t_start_total;
+
+	double avg_execution = ms_double_total.count()/num_of_images;
+
+	double avg_deviation = 0;
+	double max_deviation = 0;
+
+	double temp_deviation = 0;
+	for (uint i = 0; i < num_of_images; i++){
+		temp_deviation = (ms_double[i].count()*1.0) - avg_execution;
+		avg_deviation += temp_deviation;
+
+		if (abs(max_deviation) < abs(temp_deviation)){
+			max_deviation = temp_deviation;
+		}
+	}
+	avg_deviation /= (num_of_images);
+
+    cout << fixed;
+	cout << setprecision(3);
+  	cout << "Execution time total:         " << ms_double_total.count() << " ms" << endl;
+  	cout << "Execution time avg per image: " << avg_execution << "   ms" << endl;
+  	cout << "Average deviation:            " << abs(avg_deviation) << "   ms" << endl;
+  	cout << "Maximum deviation:            " << max_deviation << "   ms"<< endl;
+
+}
+#endif
 
 
 //EXAMPLES
@@ -58,6 +126,7 @@ void esp_main(){
  *	Then it calculates all points of the image into homography coordinates
  *	Lastly it outputs the real world distance in mm of the point to the camera normal to the homography plane.
  */
+ /*
 void example_01(Mat image){
 	image_processing img_proc;	
 
@@ -82,10 +151,12 @@ void example_01(Mat image){
 
  	cout << "\nDistance to pixel from camera: " << img_proc.distance_camera_to_pixel(CPoint) << endl;
 }
+*/
 
 /* example_02
  *	Load, display and save image.
  */
+ /*
 void example_02(){
 	string path_to_image = "../samples/images/picture250.jpg";
 	Mat image = img_core.load_image(path_to_image);
@@ -94,10 +165,12 @@ void example_02(){
 
 	img_core.save_image("temp.jpg", image);
 }
+*/
 
 /* example_03
  *	Process single image and display
  */
+ /*
 void example_03(){
 	uint image_i = 6;
 
@@ -117,11 +190,13 @@ void example_03(){
 
  	waitKey(0);
 }
+*/
 
 
 /* example_04
  *	Process multiple images and display
  */
+ /*
 void example_04(){
 	string path_to_image;
 	string path_to_results;
@@ -148,10 +223,12 @@ void example_04(){
 	 	waitKey(0);
   	}
 }
+*/
 
 /* example_05
  *	Process multiple images and save
  */
+ /*
 void example_05(){
 	string path_to_image;
 	string path_to_results;
@@ -175,3 +252,4 @@ void example_05(){
 	  	img_core.save_image(path_to_results, Dohyo);
   	}
 }
+*/

@@ -35,7 +35,9 @@ void sumo_algo::calculate_ring_center(Mat image){
 	vector<Point2f> img_ceil = img_proc.getCeilingPixels_Points(img_filtered);
 
 	//START FIND TANGENT
+	#ifdef DEBUG
 	cout << "INFO: Calculating tangent slope." << endl;
+	#endif
 	//Definition of both lines, y = ax + b
  	Mat line_floor = this->TotalLeastSquares(img_floor);
 	Mat line_ceil = this->TotalLeastSquares(img_ceil);
@@ -48,7 +50,9 @@ void sumo_algo::calculate_ring_center(Mat image){
 		this->line_tangent.at<double>(0,0) = (line_floor.at<double>(0, 0) + line_ceil.at<double>(0, 0)) / 2;
 	}
 	else{
+		#ifdef DEBUG
 		cout << "WARNING: The calculated tangents have a large disparity. Defaulting to floor values." << endl;
+		#endif
 		this->line_tangent.at<double>(1,0) = line_floor.at<double>(1, 0);
 		this->line_tangent.at<double>(0,0) = line_floor.at<double>(0, 0);
 	}
@@ -82,8 +86,9 @@ void sumo_algo::calculate_ring_center(Mat image){
 	imshow("Tangent", HFrame);
 	waitKey(0);
 	*/
-
+	#ifdef DEBUG
 	cout << "INFO: Calculating tangent offset." << endl;
+	#endif
 	uint pixels_found_count = 0;
 	uint tangent_shift = 0;
 	uint x, y;
@@ -142,8 +147,9 @@ void sumo_algo::calculate_ring_center(Mat image){
 
 
 	//START FIND NORMAL
+	#ifdef DEBUG
 	cout << "INFO: Calculating normal." << endl;
-
+	#endif
 	this->line_normal = Mat::zeros(2, 2, CV_64F);
 
 	//Condition to avoid dividing by zero
@@ -187,7 +193,9 @@ void sumo_algo::calculate_ring_center(Mat image){
 
 Point2f sumo_algo::calculate_robot_position(){
     //Find robot as a point
+    #ifdef DEBUG
     cout << "INFO: Calculating robot position." << endl;
+    #endif
     Point2f camera_point_homography = img_proc.get_camera_coordinates();
 
     int cent_x = this->outer_ring_radius_pixels - this->circle_center.x;
@@ -289,8 +297,9 @@ Mat sumo_algo::draw_dohyo(){
 
     //cout << "Circle center:            " << this->circle_center << endl;
     //cout << "Robot Point:              " << robot_point   << endl;	
+    #ifdef DEBUG
     cout << "Robot distance to center: " << this->robot.distance_to_center/10 << " cm" << endl;
-
+    #endif
 	//Draw viewing angle lines
 	double viewing_angle = 40 * PI/180; //deg to rad
 	double view_ang_1 = PI/2 + viewing_angle/2;
