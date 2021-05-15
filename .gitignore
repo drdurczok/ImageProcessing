@@ -34,3 +34,7 @@
 *.exe
 *.out
 *.app
+
+#build directories
+/DetectionPC/build
+/CalibrationPC/build
