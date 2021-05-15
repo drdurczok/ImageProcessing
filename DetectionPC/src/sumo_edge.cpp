@@ -1,10 +1,10 @@
-#include "../inc/sumo_algo.hpp"
+#include "../inc/sumo_edge.hpp"
 
-sumo_algo::sumo_algo(){
+sumo_edge::sumo_edge(){
 
 }
 
-Point2f sumo_algo::find_robot_position(Mat image){
+Point2f sumo_edge::find_robot_position(Mat image){
 	this->calculate_ring_center(image);
 	Point2f robot_point = this->calculate_robot_position();
 
@@ -26,7 +26,7 @@ Point2f sumo_algo::find_robot_position(Mat image){
  *		x1 = x0 +- sqrt( distance^2 / (1 + slope^2) ) 
  *		y1 = slope * x1 + offset
  */
-void sumo_algo::calculate_ring_center(Mat image){
+void sumo_edge::calculate_ring_center(Mat image){
 	Mat HFrame = img_proc.get_homography_frame(image);
 	Mat img_filtered = img_proc.filter(HFrame);
 	//TODO Add check if the filtered image has sensible information (one clump)
@@ -191,7 +191,7 @@ void sumo_algo::calculate_ring_center(Mat image){
 	//END DISTANCE TO ROBOT
 }
 
-Point2f sumo_algo::calculate_robot_position(){
+Point2f sumo_edge::calculate_robot_position(){
     //Find robot as a point
     #ifdef DEBUG
     cout << "INFO: Calculating robot position." << endl;
@@ -209,7 +209,9 @@ Point2f sumo_algo::calculate_robot_position(){
 }
 
 
-Mat sumo_algo::TotalLeastSquares(vector<Point2f> points) {
+/*______________________ALGORITHMS___________________________*/
+
+Mat sumo_edge::TotalLeastSquares(vector<Point2f> points) {
 	//Build A matrix 
 	int N = 2;
 	Mat A = Mat::zeros(N, N, CV_64FC1);
@@ -239,7 +241,7 @@ Mat sumo_algo::TotalLeastSquares(vector<Point2f> points) {
 	return X;
 }
 
-vector<Point> sumo_algo::get_line_points(Mat image, Mat X){
+vector<Point> sumo_edge::get_line_points(Mat image, Mat X){
 	vector<Point>lines;
 	for (int x = 0; x < image.size().width; x++){				// y = b + ax;
 		double y = X.at<double>(0, 0) + X.at<double>(1, 0)*x;
@@ -249,7 +251,7 @@ vector<Point> sumo_algo::get_line_points(Mat image, Mat X){
     return lines;
 }
 
-vector<Point> sumo_algo::get_fov_line_points(Mat image, Point2f point, double angle){
+vector<Point> sumo_edge::get_fov_line_points(Mat image, Point2f point, double angle){
 	Mat line = Mat::zeros(2, 2, CV_64F);
 	line.at<double>(1,0) = tan(angle);
 	line.at<double>(0,0) = point.y - line.at<double>(1,0) * point.x;
@@ -271,7 +273,8 @@ vector<Point> sumo_algo::get_fov_line_points(Mat image, Point2f point, double an
 	return line_points;
 }
 
-Mat sumo_algo::draw_homography_frame(Mat image){
+/*______________________VISUAL___________________________*/
+Mat sumo_edge::draw_homography_frame(Mat image){
 	Mat HFrame = img_proc.get_homography_frame(image);
 
 	//Draw tangent
@@ -284,7 +287,7 @@ Mat sumo_algo::draw_homography_frame(Mat image){
 	return HFrame;
 }
 
-Mat sumo_algo::draw_dohyo(){
+Mat sumo_edge::draw_dohyo(){
 	string path_to_image = "../calibration/Dohyo.jpg";
     Mat dohyo = imread(path_to_image, IMREAD_COLOR);
 
@@ -305,10 +308,10 @@ Mat sumo_algo::draw_dohyo(){
 	double view_ang_1 = PI/2 + viewing_angle/2;
 	double view_ang_2 = PI/2 - viewing_angle/2;
 
-	vector<Point> line_view_1_points = get_fov_line_points(dohyo, robot_point, view_ang_1);
+	vector<Point> line_view_1_points = this->get_fov_line_points(dohyo, robot_point, view_ang_1);
 	polylines(dohyo, line_view_1_points, false, Scalar(255, 0, 0), 2, 8);
 
-	vector<Point> line_view_2_points = get_fov_line_points(dohyo, robot_point, view_ang_2);
+	vector<Point> line_view_2_points = this->get_fov_line_points(dohyo, robot_point, view_ang_2);
 	polylines(dohyo, line_view_2_points, false, Scalar(255, 0, 0), 2, 8);
 
     return dohyo;

@@ -1,5 +1,5 @@
 //#define DEBUG
-#define BENCHMARK
+//#define BENCHMARK
 
 #include <opencv2/highgui.hpp>
 #include <iostream>
@@ -7,7 +7,8 @@
 
 //#include "image_core.cpp"
 #include "image_processing.cpp"
-#include "sumo_algo.cpp"
+#include "sumo_edge.cpp"
+#include "sumo_opponent.cpp"
 
 using namespace cv;
 using namespace std;
@@ -25,7 +26,8 @@ void benchmark();
 image_core img_core(2,2);
 #endif
 
-sumo_algo sumo;
+sumo_edge     sumo_edge;
+sumo_opponent sumo_opp;
 
 void run(String);
 
@@ -34,8 +36,8 @@ uint num_of_images = 35;
 int main(){
 
 	#ifndef BENCHMARK
-	String path_to_image = "../samples/26.jpg";
-	run();
+	String path_to_image = "../samples/Opponent/1.jpg";
+	run(path_to_image);
 	#else
 	benchmark();
 	#endif
@@ -54,12 +56,14 @@ void run(String path_to_image){
         cout << "Could not open or find the image" << endl;
     }
 
-	Point2f robot_position = sumo.find_robot_position(image);
+	//Point2f robot_position = sumo_edge.find_robot_position(image);
+	sumo_opp.calculate_opponent_position(image);
 
 	//cout << robot_position << endl;
   	
 	//Send to STM32 through uart
 }
+
 
 #ifdef BENCHMARK
 void benchmark(){

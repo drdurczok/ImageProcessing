@@ -1,14 +1,16 @@
-#ifndef SUMO_ALGO_H
-#define SUMO_ALGO_H
+#ifndef SUMO_EDGE_H
+#define SUMO_EDGE_H
+
+#include "image_processing.hpp"
 
 using namespace std;
 using namespace cv;
 
 #define PI 3.14159
 
-class sumo_algo {
+class sumo_edge {
   public:
-    sumo_algo();
+    sumo_edge();
 
     Mat distance_to_edge(Mat);
     Mat distance_to_center(Mat);
@@ -35,10 +37,10 @@ class sumo_algo {
     double outer_ring_radius_pixels = outer_ring_diameter_pixels / 2;
     Point2f circle_center;
 
+
     Mat TotalLeastSquares(vector<Point2f>);
     vector<Point> get_line_points(Mat, Mat);
     vector<Point> get_fov_line_points(Mat, Point2f, double);
-
 
 };
 
