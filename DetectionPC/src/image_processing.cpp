@@ -22,7 +22,7 @@ float image_processing::getCircleRadius(){
 }
 
 
-bool image_processing::filter(Mat input, Mat & output, int selection){
+void image_processing::prepare_image(Mat input, Mat & output){
 	#ifdef DEBUG
 	cout << "INFO: Filtering image." << endl;
 	#endif
@@ -34,26 +34,10 @@ bool image_processing::filter(Mat input, Mat & output, int selection){
 	cvtColor(input, output, COLOR_RGB2GRAY);
 
 	//output = this->undistort(output);
-
-	// Get threshold image
-	bool success;
-	switch (selection){
-	    case WHITE:
-	    	success = thresh_edge(output, output);
-	    	break;
-	    default:
-	    	success = thresh_edge(output, output);
-	}
-
-	if (success) {
-		return true;
-	}
-	else{
-		return false;
-	}
 }
 
-/*------------------------------------------------------------------------------------------*/
+/*______________________EDGE DETECTION___________________________*/
+
 Mat image_processing::find_edge(Mat input, edge_filter_methods selection){	
 	Mat output;
 
@@ -169,193 +153,8 @@ vector<Point2f> image_processing::getCeilingPixels_Points(Mat input){
 	return top_pixels;
 }
 
-/*------------------------------------------------------------------------------------------*/
-bool image_processing::thresh_edge(Mat input, Mat & result){
-	uint min_threshold;
-	uint max_threshold = 255;
+/*______________________CAMERA___________________________________*/
 
-	Mat kernel_close = getStructuringElement(MORPH_RECT, Size(3,3));
-	Mat kernel_open  = getStructuringElement(MORPH_RECT, Size(5,5));
-
-	vector<vector<Point>> contours;
-	double area;
-	double area_prev = 999999;
-	double min_area = 4000;
-	double max_area = 20000;
-	double max_step_area = 10000;
-	double delta_step_area = 0;
-	double delta_step_area_prev = 0;
-
-	int starting_thresh = 190;
-
-	Mat output;
-
-	int step = 15;
-	for (int min_threshold = starting_thresh; min_threshold > 0 ; min_threshold -= step){
-		threshold(input, output, min_threshold, max_threshold, THRESH_BINARY);
-
-		/* Closing morphology, removes small holes */
-		morphologyEx(output, output, MORPH_CLOSE, kernel_close);
-
-		/* Opening morphology, removes small objects */
-		morphologyEx(output, output, MORPH_OPEN, kernel_open);
-
-		GaussianBlur(output, output, Size(3,3), 1);
-
-		findContours(output, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
-		
-		/*	Display Contours 
-		Mat temp = input.clone();
-		drawContours(temp, contours, -1, Scalar(0,255,75), 2);
-		imshow("a", temp);
-		waitKey(0);
-		*/
-
-		if (contours.size() == 1){
-			area = contourArea(contours[0]);
-
-			if (area > max_area){break;}
-			if (area > min_area){
-				if (area - area_prev > max_step_area){break;}
-			}
-
-			if (delta_step_area > 0){
-				delta_step_area = area - area_prev;
-				if (delta_step_area > delta_step_area_prev){break;}
-			}
-			else{
-				delta_step_area = area;
-			}
-
-			area_prev = area;
-			delta_step_area_prev = delta_step_area;
-		}
-		else if (contours.size() == 0){
-			cout << "INFO: Found no contours" << endl;
-		}
-		else if (min_threshold == starting_thresh){
-			return false;
-		}
-		else{
-			break;
-		}
-
-		result = output.clone();
-	}
-
-	#ifdef DEBUG
-	cout << "Min threshold: " << min_threshold << endl;
-	cout << "Area:          " << area_prev << endl;
-	#endif
-
-	return true;
-}
-
-vector<int> image_processing::calculate_thresholds(Mat1b const& image){
-	Mat hist = this->get_histogram(image);
-
-    // Transform Mat to vector
-    vector<int> hist_vect;
-   	hist_vect.insert(hist_vect.end(), hist.ptr<float>(0), hist.ptr<float>(0)+hist.rows);
-  	
-  	// Find deviation
-	int avg_dev;
-	this->findDeviation(hist_vect, avg_dev);
-
-	// Calculate thresholds above average deviation
-	int a_prev = 0;
-	vector<int> thresh;
-   	for (uint i = 0; i < hist_vect.size(); i++){
-   		if (abs(a_prev - hist_vect[i]) > avg_dev ){
-   			thresh.push_back(i);
-   		}
-   		a_prev = hist_vect[i];
-   	}
-
-	return thresh;   	
-}
-
-Mat image_processing::get_histogram(Mat1b const& image){
-    // Set histogram bins count
-    int bins = 256;
-    int histSize[] = {bins};
-
-    // Set ranges for histogram bins
-    float lranges[] = {0, 256};
-    const float* ranges[] = {lranges};
-
-    // Create matrix for histogram
-    Mat hist;
-    int channels[] = {0};
-
-    calcHist(&image, 1, channels, Mat(), hist, 1, histSize, ranges, true, false);
-
-    //this->show_histogram(hist, bins);
-
-    return hist;
-}
-
-void image_processing::show_histogram(Mat hist, int bins){
-	// Visualize each bin
-    double max_val=0;
-    minMaxLoc(hist, 0, &max_val);
-
-    // Create matrix for histogram visualization
-    int const hist_height = 256;
-    Mat3b hist_image = Mat3b::zeros(hist_height, bins);
-
-    for(int b = 0; b < bins; b++){
-        float const binVal = hist.at<float>(b);
-        int   const height = cvRound(binVal*hist_height/max_val);
-        line(hist_image, Point(b, hist_height-height), Point(b, hist_height), Scalar::all(255));
-    }
-    imshow("Histogram", hist_image);
-}
-
-// Function to find all the local maxima and minima in the given array arr[] 
-void image_processing::findLocalMaximaMinima(int n, vector<int> arr, vector<int> & mx, vector<int> & mn){ 
-    // Checking whether the first point is local maxima or minima or none 
-    if (arr[0] > arr[1]){
-        mx.push_back(0); 
-    }
-    else if (arr[0] < arr[1]){
-        mn.push_back(0); 
-    }
-  
-    // Iterating over all points to check local maxima and local minima 
-    for(int i = 1; i < n - 1; i++) { 
-	    // Condition for local minima 
-	    if ((arr[i - 1] > arr[i]) and (arr[i] < arr[i + 1])){
-	        mn.push_back(i); 
-	    }
-	    // Condition for local maxima 
-	    else if ((arr[i - 1] < arr[i]) and (arr[i] > arr[i + 1])){
-	        mx.push_back(i); 
-	    }
-    } 
-  
-    // Checking whether the last point is local maxima or minima or none 
-    if (arr[n - 1] > arr[n - 2]){
-        mx.push_back(n - 1); 
-    }
-    else if (arr[n - 1] < arr[n - 2]){
-        mn.push_back(n - 1); 
-    }
-}
-
-void image_processing::findDeviation(vector<int> arr, int & avg_dev){ 
-	avg_dev = 0;
-
-	int a_prev = 0;
-	for (int a : arr){
-		avg_dev += abs(a_prev - a);
-		a_prev = a;
-	}
-
-	avg_dev /= arr.size();
-}
-
-/*------------------------------------------------------------------------------------------*/
 void image_processing::read_camera_parameters(string path){
 	cv::FileStorage file(path, cv::FileStorage::READ);
 	if (path == calibration_file_path){
@@ -384,7 +183,8 @@ Mat image_processing::undistort(Mat img){
 	return output;
 }
 
-/*------------------------------------------------------------------------------------------*/
+/*______________________HOMOGRAPHY_______________________________*/
+
 Point2f image_processing::homography_calc(Point2f pixel){
     /*
      * Convert point in image frame to homography coordinates.
@@ -421,6 +221,8 @@ Mat image_processing::get_homography_origin_frame(Mat frame){
 
     return frame;
 }
+
+/*______________________DISTANCE_________________________________*/
 
 void image_processing::calculate_camera_coordinates(){
 	Mat R, cameraPosition;

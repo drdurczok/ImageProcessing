@@ -10,36 +10,34 @@
 using namespace std;
 using namespace cv;
 
+#define PI 3.14159
+
 class image_processing {
   public:
-    enum thresh_filter_methods{WHITE};
     enum edge_filter_methods{SOBEL,FLOOR_PIXELS,CEILING_PIXELS};
 
     image_processing();
-    Mat undistort(Mat); //TODO: Move to privete after finished testing.
 
     Point2f getCircleCenter();
     float   getCircleRadius();
 
-    //Filters
-    bool filter(Mat, Mat &, int);
+    void prepare_image(Mat, Mat &);
+
+    /*______________________EDGE DETECTION___________________________*/
     Mat find_edge(Mat, edge_filter_methods);
     vector<Point2f> getFloorPixels_Points(Mat);
     vector<Point2f> getCeilingPixels_Points(Mat);
 
-    //Homography
+    /*______________________HOMOGRAPHY_______________________________*/
     Point2f homography_calc(Point2f);
     Mat get_homography_frame(Mat);
     Mat get_homography_origin_frame(Mat);
     Point2f get_camera_coordinates();
 
-    //Distance Calculations
+    /*______________________DISTANCE_________________________________*/
     double distance_camera_to_pixel(Point2f);
-
     Mat draw_point_on_frame(Mat, Point2f);
-
     Mat distance_to_edge(Mat);
-
     double get_pix_to_mm();
 
   private:
@@ -49,28 +47,20 @@ class image_processing {
     Point2f HCenter;
     float   radius;
 
-    //Filters
+    /*______________________EDGE DETECTION___________________________*/
     Mat sobelEdgeDetection(Mat);
     Mat getFloorPixels(Mat);
     Mat getCeilingPixels(Mat);
 
-    //Histogram
-    bool thresh_edge(Mat, Mat &);
-    vector<int> calculate_thresholds(Mat1b const&);
-    Mat get_histogram(Mat1b const&);
-    void show_histogram(Mat, int);
-    void findLocalMaximaMinima(int, vector<int> arr, vector<int> & mx, vector<int> & mn);
-    void findDeviation(vector<int>, int & );
-
-
-    //Undistortion
+    /*______________________CAMERA___________________________________*/
     Mat cameraMatrix;
     Mat distCoeffs;     //Lens distortion coefficients
     Mat mapx, mapy;
 
     void read_camera_parameters(string);
+    Mat undistort(Mat);
 
-    //Homography
+    /*______________________HOMOGRAPHY_______________________________*/
     void calculate_camera_coordinates();
 
     Mat rvec;
@@ -79,7 +69,7 @@ class image_processing {
     Mat homographyMatrixInv;
     double distanceToPlaneNormal;
 
-    //Distance Calculations
+    /*______________________DISTANCE_________________________________*/
     Point2f camera_coordinates;
     double pix_to_mm;
 

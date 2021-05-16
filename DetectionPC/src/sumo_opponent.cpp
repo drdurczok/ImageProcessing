@@ -1,17 +1,23 @@
 #include "../inc/sumo_opponent.hpp"
 
-sumo_opponent::sumo_opponent(){
+sumo_opponent::sumo_opponent(){}
 
+Point2f sumo_opponent::find_opponent_position(Mat image){
+	this->calculate_opponent_position(image);
+
+	return Point2f(0,0);
 }
 
 void sumo_opponent::calculate_opponent_position(Mat image){
-	Mat HFrame = img_proc.get_homography_frame(image);
-	Mat img_filtered;
+	Mat HFrame = this->get_homography_frame(image);
+	Mat Frame;
 
-	bool success = img_proc.filter(HFrame, img_filtered, 0);
+	this->prepare_image(HFrame, Frame);
+
+	bool success = false;
 
     imshow("1", HFrame);
-    imshow("2", img_filtered);
+    imshow("2", Frame);
 
 
     if (success){
@@ -20,5 +26,4 @@ void sumo_opponent::calculate_opponent_position(Mat image){
     else{
 		cout << "WARNING: Threshold not found for image." << endl;
 	}
-
 }
