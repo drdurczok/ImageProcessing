@@ -1,11 +1,10 @@
 //#define DEBUG
-//#define BENCHMARK
+#define BENCHMARK
 
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <iomanip>
 
-//#include "image_core.cpp"
 #include "image_processing.cpp"
 #include "sumo_edge.cpp"
 #include "sumo_opponent.cpp"
@@ -13,18 +12,21 @@
 using namespace cv;
 using namespace std;
 
+/*------------------------------------------------*/
 #ifdef BENCHMARK
-//Measure system time
 #include <chrono>
 using std::chrono::high_resolution_clock;
 using std::chrono::duration;
 
 void benchmark();
 #endif
-
+/*------------------------------------------------*/
 #ifdef DEBUG
+#include "image_core.cpp"
+
 image_core img_core(2,2);
 #endif
+/*------------------------------------------------*/
 
 sumo_edge     sumo_edge;
 sumo_opponent sumo_opp;
@@ -36,7 +38,8 @@ uint num_of_images = 35;
 int main(){
 
 	#ifndef BENCHMARK
-	String path_to_image = "../samples/Opponent/1.jpg";
+	//String path_to_image = "../samples/Opponent/1.jpg";
+	String path_to_image = "../samples/1.jpg";
 	run(path_to_image);
 	#else
 	benchmark();
@@ -56,12 +59,11 @@ void run(String path_to_image){
         cout << "Could not open or find the image" << endl;
     }
 
-	//Point2f robot_position = sumo_edge.find_robot_position(image);
-	sumo_opp.calculate_opponent_position(image);
-
-	//cout << robot_position << endl;
+	Point2f robot_position = sumo_edge.find_robot_position(image);
+	//sumo_opp.calculate_opponent_position(image);
   	
 	//Send to STM32 through uart
+	cout << robot_position << endl;
 }
 
 
@@ -85,6 +87,7 @@ void benchmark(){
 		path_to_image = "../samples/" + to_string(i) + ".jpg";
 
 		run(path_to_image);
+		//imshow("Dohyo", sumo_edge.draw_dohyo());
 
 		t_end = high_resolution_clock::now();
 

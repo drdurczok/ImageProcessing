@@ -12,6 +12,7 @@ using namespace cv;
 
 class image_processing {
   public:
+    enum thresh_filter_methods{WHITE};
     enum edge_filter_methods{SOBEL,FLOOR_PIXELS,CEILING_PIXELS};
 
     image_processing();
@@ -21,7 +22,7 @@ class image_processing {
     float   getCircleRadius();
 
     //Filters
-    Mat filter(Mat);
+    bool filter(Mat, Mat &, int);
     Mat find_edge(Mat, edge_filter_methods);
     vector<Point2f> getFloorPixels_Points(Mat);
     vector<Point2f> getCeilingPixels_Points(Mat);
@@ -52,6 +53,15 @@ class image_processing {
     Mat sobelEdgeDetection(Mat);
     Mat getFloorPixels(Mat);
     Mat getCeilingPixels(Mat);
+
+    //Histogram
+    bool thresh_edge(Mat, Mat &);
+    vector<int> calculate_thresholds(Mat1b const&);
+    Mat get_histogram(Mat1b const&);
+    void show_histogram(Mat, int);
+    void findLocalMaximaMinima(int, vector<int> arr, vector<int> & mx, vector<int> & mn);
+    void findDeviation(vector<int>, int & );
+
 
     //Undistortion
     Mat cameraMatrix;
