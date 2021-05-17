@@ -38,3 +38,5 @@
 #build directories
 /DetectionPC/build
 /CalibrationPC/build
+/ESP32/HelperCode
+/ESP32/packages

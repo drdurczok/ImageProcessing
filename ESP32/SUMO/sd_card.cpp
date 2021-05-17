@@ -32,23 +32,22 @@ void test_sd(){
   
 }
 
-//Write a file in SD card
-void writeFile(fs::FS &fs, const char * path, const char * message){
-  Serial.printf("Writing file: %s\n", path);
-  
-  File file = fs.open(path, FILE_WRITE);
-  if(!file){
-    Serial.println("Failed to open file for writing");
+//Read a file from SD card
+void readFile(String path){
+  File file = SD_MMC.open(path, FILE_READ);
+ 
+  if (!file) {
+    Serial.println("Opening file to read failed");
     return;
   }
-  
-  
-  //fwrite(fb->buf, 1, fb->len, file);
-  if(file.print(message)){
-    Serial.println("File written");
-  } else {
-    Serial.println("Write failed");
+ 
+  Serial.println("File Content:");
+ 
+  while (file.available()) {
+    Serial.write(file.read());
   }
+ 
+  file.close();
 }
 
 //Append to the end of file in SD card
@@ -115,10 +114,27 @@ void writeFrame(camera_fb_t * frame){
   } 
   else {
     file.write(frame->buf, frame->len); // payload (image), payload length
-    Serial.printf("Saved file to path: %s\n", path.c_str());
+    //Serial.printf("Saved file to path: %s\n", path.c_str());
     EEPROM.write(0, pictureNumber);
     EEPROM.commit();
   }
   file.close();
   esp_camera_fb_return(frame); 
+}
+
+
+camera_fb_t * readFrame(String path){
+  camera_fb_t * frame_read;
+
+  fs::FS &fs = SD_MMC; 
+  File file = fs.open(path.c_str(), FILE_READ);
+  if(!file){
+    Serial.println("Failed to open file in reading mode");
+  } 
+  else {
+    file.read(frame_read->buf, frame_read->len); // payload (image), payload length
+  }
+  file.close();
+
+  return frame_read;
 }

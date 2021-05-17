@@ -2,8 +2,13 @@
 #include "esp_camera.h"
 #include "camera_pins.h"
 
+#include "img_converters.h" // see https://github.com/espressif/esp32-camera/blob/master/conversions/include/img_converters.h
+
 #include "image_capture.h"
 #include "sd_card.h"
+
+#define WIDTH 160
+#define HEIGHT 120    
 
 void init_camera(){
   camera_config_t config;
@@ -26,17 +31,12 @@ void init_camera(){
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
-  config.pixel_format = PIXFORMAT_JPEG;
-  //init with high specs to pre-allocate larger buffers
-  if(psramFound()){
-    config.frame_size = FRAMESIZE_UXGA;
-    config.jpeg_quality = 10;
-    config.fb_count = 2;
-  } else {
-    config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 12;
-    config.fb_count = 1;
-  }
+  config.pixel_format = PIXFORMAT_GRAYSCALE; //YUV422,GRAYSCALE,RGB565,JPEG
+  
+  config.frame_size = FRAMESIZE_QQVGA;        ////QVGA|CIF|VGA|SVGA|XGA|SXGA|UXGA Do not use sizes above QVGA when not JPEG
+  config.jpeg_quality = 12;                  //0-63 lower number means higher quality
+  config.fb_count = 1;                       //if more than one, i2s runs in continuous mode. Use only with JPEG
+
 
   // camera init
   esp_err_t err = esp_camera_init(&config);
@@ -53,7 +53,7 @@ void init_camera(){
     s->set_saturation(s, -2);//lower the saturation
   }
   //drop down frame size for higher initial frame rate
-  s->set_framesize(s, FRAMESIZE_QVGA);
+  s->set_framesize(s, FRAMESIZE_QQVGA);
 
   frame = NULL;
 }
