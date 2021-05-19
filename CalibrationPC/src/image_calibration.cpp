@@ -21,7 +21,7 @@ image_calibration::image_calibration(){
 
 bool image_calibration::get_settings(){
     //this->remove_file(calibration_file_path);
-    //this->remove_file(settings_file_path);
+    this->remove_file(settings_file_path);
 
     //Calibration
     if (check_file_exists(calibration_file_path)){
@@ -44,11 +44,13 @@ bool image_calibration::get_settings(){
     }
     else if (check_images_exist()){
         cout << "Camera settings don't exist, creating parameters" << endl;
-       this->find_homography_matrix();
+        this->find_homography_matrix();
+        this->calculate_homography_map();
     }
     else{
         this->take_homography_images();
         this->find_homography_matrix();
+        this->calculate_homography_map();
     }
     this->read_parameters(settings_file_path);
     this->read_parameters(calibration_file_path);
@@ -233,6 +235,66 @@ void image_calibration::find_homography_matrix(){
     cout << "Pixels per mm: " << pix_to_mm << endl;
 
     this->save_parameters(settings_file_path);
+}
+
+void image_calibration::calculate_homography_map(){
+    uint32_t array_length = this->IMAGE_SIZE.height*this->IMAGE_SIZE.width;
+    uint16_t pixel_map[3][array_length];
+    double linearized_homogeneous_array[3][array_length];
+
+    //Get map of pixel coordinates per pixel 
+    for(uint i = 0; i < array_length; i++){
+        pixel_map[0][i] = i%this->IMAGE_SIZE.width;
+        pixel_map[1][i] = i/this->IMAGE_SIZE.width;
+        pixel_map[2][i] = 1;
+    }
+
+    //Get linearized homogeneous array by getting the dot product of the pixel map and the homography matrix
+    for(uint i = 0; i < array_length; i++){
+        linearized_homogeneous_array[0][i] =  pixel_map[0][i]*this->homographyMatrixInv.at<double>(0,0) 
+                                            + pixel_map[1][i]*this->homographyMatrixInv.at<double>(0,1) 
+                                            + pixel_map[2][i]*this->homographyMatrixInv.at<double>(0,2);
+
+        linearized_homogeneous_array[1][i] =  pixel_map[0][i]*this->homographyMatrixInv.at<double>(1,0) 
+                                            + pixel_map[1][i]*this->homographyMatrixInv.at<double>(1,1) 
+                                            + pixel_map[2][i]*this->homographyMatrixInv.at<double>(1,2);
+
+        linearized_homogeneous_array[2][i] =  pixel_map[0][i]*this->homographyMatrixInv.at<double>(2,0)
+                                            + pixel_map[1][i]*this->homographyMatrixInv.at<double>(2,1)
+                                            + pixel_map[2][i]*this->homographyMatrixInv.at<double>(2,2);
+    }
+
+    //Normalize
+    for(uint i = 0; i < array_length; i++){
+        linearized_homogeneous_array[0][i] = round(linearized_homogeneous_array[0][i] / linearized_homogeneous_array[2][i]);
+        linearized_homogeneous_array[1][i] = round(linearized_homogeneous_array[1][i] / linearized_homogeneous_array[2][i]);
+        linearized_homogeneous_array[2][i] = 1;
+    }
+
+    cout << this->homographyMatrixInv << endl << endl;
+    cout << this->homographyMatrixInv.at<double>(0,0) << endl << endl;
+
+    cout << linearized_homogeneous_array[0][0] << "," << linearized_homogeneous_array[1][0] << "," << linearized_homogeneous_array[2][0] << endl;
+    cout << linearized_homogeneous_array[0][1] << "," << linearized_homogeneous_array[1][1] << "," << linearized_homogeneous_array[2][1] << endl;
+    cout << linearized_homogeneous_array[0][2] << "," << linearized_homogeneous_array[1][2] << "," << linearized_homogeneous_array[2][2] << endl;
+
+    // Add padding
+    //TODO
+
+    // Write to file
+    ofstream out_x("../calibration/homography_map_x.txt");
+    ofstream out_y("../calibration/homography_map_y.txt");
+
+    for(uint i = 0; i < array_length; i++){
+        out_x << to_string(int16_t(linearized_homogeneous_array[0][i])) << " ";
+        out_y << to_string(int16_t(linearized_homogeneous_array[1][i])) << " ";
+        if (i%this->IMAGE_SIZE.width == 0 && i != 0){
+            out_x << "\n";
+            out_y << "\n";
+        }
+    }
+    out_x.close();
+    out_y.close();
 }
 
 void image_calibration::create_ring(){

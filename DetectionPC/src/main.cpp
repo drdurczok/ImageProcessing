@@ -56,6 +56,8 @@ void run(String path_to_image){
     if( image.empty() ){
         cout << "Could not open or find the image" << endl;
     }
+    imshow("afs", image);
+    waitKey(0);
 
     sumo.run(image);
 

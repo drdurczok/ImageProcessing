@@ -1,6 +1,8 @@
 #ifndef IMAGE_PROCESSING_H
 #define IMAGE_PROCESSING_H
 
+#include <fstream>
+
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/photo.hpp>
@@ -31,6 +33,7 @@ class image_processing {
     /*______________________HOMOGRAPHY_______________________________*/
     Point2f homography_calc(Point2f);
     Mat get_homography_frame(Mat);
+    Mat get_homography_frame_from_map(Mat );
     Mat get_homography_origin_frame(Mat);
     Point2f get_camera_coordinates();
 
@@ -58,6 +61,7 @@ class image_processing {
     Mat mapx, mapy;
 
     void read_camera_parameters(string);
+    void read_file(string, double array[]);
     Mat undistort(Mat);
 
     /*______________________HOMOGRAPHY_______________________________*/

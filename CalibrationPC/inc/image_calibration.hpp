@@ -59,6 +59,7 @@ class image_calibration {
     void take_homography_images();
     void calibrate();
     void find_homography_matrix();
+    void calculate_homography_map();
     void create_ring();
 
     void save_parameters(string);

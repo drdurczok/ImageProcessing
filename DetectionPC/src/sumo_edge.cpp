@@ -44,13 +44,10 @@ Point2f sumo_edge::calculate_robot_position(){
  *	STEP 4	-	Find center of circle
  */
 void sumo_edge::calculate_ring_center(Mat image){
-	Mat HFrame = this->get_homography_frame(image);
-	Mat Frame;
-	this->prepare_image(HFrame, Frame);
-	bool success = this->calculate_threshold_image(Frame, Frame);
+	bool success = this->calculate_threshold_image(image, image);
 
 	if (success){
-		this->find_tangent(Frame);
+		this->find_tangent(image);
 
 		this->find_normal();
 

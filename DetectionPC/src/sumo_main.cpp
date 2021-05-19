@@ -5,13 +5,15 @@
 sumo_main::sumo_main(){}
 
 void sumo_main::run(Mat image){
+	this->prepare_image(image, image);
+	
 	Point2f robot_position;
 	Point2f opponent_position;
 
 	robot_position = edge_detection.find_robot_position(image);
-	//opponent_detection.calculate_opponent_position(image);
+	opponent_detection.calculate_opponent_position(image);
 
-	//imshow("Dohyo", edge_detection.draw_dohyo());
-	//waitKey(0);
+	imshow("Dohyo", edge_detection.draw_dohyo());
+	waitKey(0);
 
 }
