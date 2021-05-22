@@ -92,3 +92,6 @@ cpu_freq -s 1008000
 
 # Read CPU parameters (including temperature)
 cpu_freq
+
+#NanoPI Neo image capture installs
+sudo apt-get install gstreamer1.0-plugins-good
