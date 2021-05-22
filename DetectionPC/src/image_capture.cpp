@@ -6,9 +6,11 @@ image_capture::image_capture(){
     // OR advance usage: select any API backend
     int deviceID = 0;             // 0 = open default camera
     int apiID = cv::CAP_ANY;      // 0 = autodetect default API
-    #ifdef ARM
-    apiID = cv::CAP_GSTREAMER;
-    #endif
+
+    if(architecture == "ARM"){
+	    cout << "INFO: Changing video stream to GStreamer." << endl;
+	    apiID = cv::CAP_GSTREAMER;
+    }
 
     // open selected camera using selected API
     cap.open(deviceID, apiID);

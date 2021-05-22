@@ -1,10 +1,9 @@
+#include <opencv2/highgui.hpp>
+#include <iomanip>
+#include "sys.cpp"
+
 //#define DEBUG
 //#define BENCHMARK
-#define ARM
-
-#include <opencv2/highgui.hpp>
-#include <iostream>
-#include <iomanip>
 
 #include "image_capture.cpp"
 #include "sumo_main.cpp"
@@ -36,6 +35,7 @@ void run();
 uint num_of_images = 35;
 
 int main(){
+	set_tags();
 
 	#ifndef BENCHMARK
 	Mat img = camera.take_image();
@@ -120,3 +120,4 @@ void benchmark(){
 
 }
 #endif
+

@@ -7,6 +7,8 @@
 using namespace std;
 using namespace cv;
 
+extern string architecture;
+
 class image_capture {
   public:
     image_capture();
