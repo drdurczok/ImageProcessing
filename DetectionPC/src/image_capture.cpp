@@ -5,8 +5,11 @@ image_capture::image_capture(){
     // open the default camera using default API cap.open(0);
     // OR advance usage: select any API backend
     int deviceID = 0;             // 0 = open default camera
-    //int apiID = cv::CAP_ANY;      // 0 = autodetect default API
-    int apiID = cv::CAP_GSTREAMER;
+    int apiID = cv::CAP_ANY;      // 0 = autodetect default API
+    #ifdef ARM
+    apiID = cv::CAP_GSTREAMER;
+    #endif
+
     // open selected camera using selected API
     cap.open(deviceID, apiID);
     cap.set(CAP_PROP_FRAME_WIDTH, 320);

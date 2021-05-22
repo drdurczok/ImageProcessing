@@ -61,7 +61,7 @@ cd build
 
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
 -D CMAKE_INSTALL_PREFIX=$cwd/installation/OpenCV-"$cvVersion" \
--D BUILD_LIST=dnn,core,calib3d,imgproc,imgcodecs,highgui,photo \
+-D BUILD_LIST=dnn,core,calib3d,imgproc,imgcodecs,highgui,photo,videoio \
 -D INSTALL_C_EXAMPLES=OFF \
 -D BUILD_opencv_python=OFF \
 -D WITH_TBB=OFF \

@@ -1,5 +1,6 @@
 //#define DEBUG
 //#define BENCHMARK
+#define ARM
 
 #include <opencv2/highgui.hpp>
 #include <iostream>
