@@ -27,7 +27,8 @@ void loop() {
   t_start = millis();
   
   take_photo();
-  //save_photo();
+  //processFrame();
+  save_photo();
 
   //send_photo();
   

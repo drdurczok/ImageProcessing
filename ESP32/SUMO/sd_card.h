@@ -25,6 +25,7 @@
 void init_sd();
 void test_sd();
 void appendFile(fs::FS &fs, const char * path, const char * message);
+void readFile(String path, int16_t array[]);
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels);
 void writeFrame(camera_fb_t * frame);
 camera_fb_t * readFrame(String path);

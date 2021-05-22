@@ -33,7 +33,7 @@ void test_sd(){
 }
 
 //Read a file from SD card
-void readFile(String path){
+void readFile(String path, int16_t array[]){
   File file = SD_MMC.open(path, FILE_READ);
  
   if (!file) {
@@ -41,10 +41,10 @@ void readFile(String path){
     return;
   }
  
-  Serial.println("File Content:");
- 
+  uint i = 0;
   while (file.available()) {
-    Serial.write(file.read());
+      array[i] = file.read();
+      i++;
   }
  
   file.close();

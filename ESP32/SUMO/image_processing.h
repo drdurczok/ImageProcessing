@@ -1,7 +1,9 @@
 #ifndef IMAGE_PROCESSING
 #define IMAGE_PROCESSING
 
+#include <vector>
 #include "esp_camera.h"
+#include "sd_card.h"
 
 extern camera_fb_t * frame;
 
@@ -9,7 +11,17 @@ void get_config();
 
 void print_image_shape();
 
-void homography();
+void processFrame();
+
+void threshold();
+void warpPerspective();
+void read_homography_map();
+
+double dotProduct(double vect_A[], double vect_B[]);
+void dotProduct(double vect_A[3][3], double vect_B[3], double dot_P[3]);
+void crossProduct(double vect_A[], double vect_B[], double cross_P[]);
+
+void normalize(double vect[3]);
 
 #endif
 

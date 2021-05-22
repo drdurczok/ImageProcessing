@@ -7,9 +7,6 @@
 #include "image_capture.h"
 #include "sd_card.h"
 
-#define WIDTH 160
-#define HEIGHT 120    
-
 void init_camera(){
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
