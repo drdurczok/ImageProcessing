@@ -17,15 +17,6 @@ image_capture::image_capture(){
     path_to_saves = "../samples/saved/";
     img_extension = ".jpg";
     img_number = 0;
-    String file_name;
-    for (const auto & entry : fs::directory_iterator(path_to_saves)){
-        file_name = entry.path();
-        file_name.erase(0, path_to_saves.length());
-        file_name.erase(file_name.length()-img_extension.length(), file_name.length());
-        if (img_number < stoi(file_name)){
-        	img_number = stoi(file_name);
-        }
-    }
 }
 
 image_capture::~image_capture(){

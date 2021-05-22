@@ -1,13 +1,11 @@
 #ifndef IMAGE_CAPTURE_H
 #define IMAGE_CAPTURE_H
 
-#include <filesystem>
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
 
 using namespace std;
 using namespace cv;
-namespace fs = std::filesystem;
 
 class image_capture {
   public:
