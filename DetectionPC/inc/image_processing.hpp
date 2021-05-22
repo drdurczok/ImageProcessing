@@ -61,7 +61,7 @@ class image_processing {
     Mat mapx, mapy;
 
     void read_camera_parameters(string);
-    void read_file(string, double array[]);
+    void read_file(string, int16_t array[]);
     Mat undistort(Mat);
 
     /*______________________HOMOGRAPHY_______________________________*/
@@ -71,6 +71,12 @@ class image_processing {
     Mat tvec;
     Mat homographyMatrix;
     Mat homographyMatrixInv;
+
+    uint16_t rows = 320;
+    uint16_t cols = 240;
+    uint32_t array_size = cols*rows;
+    int16_t linearized_homogeneous_array[2][320*240];
+
     double distanceToPlaneNormal;
 
     /*______________________DISTANCE_________________________________*/

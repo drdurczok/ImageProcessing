@@ -10,6 +10,10 @@ image_processing::image_processing(){
 	this->read_camera_parameters(calibration_file_path);
 	this->read_camera_parameters(settings_file_path);
 
+
+	this->read_file("../calibration/homography_map_x.txt", this->linearized_homogeneous_array[0]);
+	this->read_file("../calibration/homography_map_y.txt", this->linearized_homogeneous_array[1]);
+
 	this->calculate_camera_coordinates();
 }
 
@@ -176,7 +180,7 @@ void image_processing::read_camera_parameters(string path){
     file.release();
 }
 
-void image_processing::read_file(string path, double array[]){
+void image_processing::read_file(string path, int16_t array[]){
 	ifstream File;
     
     File.open(path);
@@ -231,22 +235,14 @@ Mat image_processing::get_homography_frame(Mat frame){
 	//Mat large_frame = Mat::zeros(frame.size().height*2, frame.size().width*2, CV_8UC3);
 	//frame.copyTo(large_frame(Rect((large_frame.cols - frame.cols)/2, (large_frame.rows - frame.rows)/2, frame.cols, frame.rows)));
 
+    //warpPerspective(frame, homography_frame, this->homographyMatrixInv, frame.size());
+
     homography_frame = this->get_homography_frame_from_map(frame);
 
     return homography_frame;
 }
 
 Mat image_processing::get_homography_frame_from_map(Mat frame){
-	uint16_t rows = frame.size().height;
-	uint16_t cols = frame.size().width;
-	uint32_t array_size = cols*rows;
-
-    double linearized_homogeneous_array[2][array_size];
-
-    // Read parameters from file
-	this->read_file("../calibration/homography_map_x.txt", linearized_homogeneous_array[0]);
-	this->read_file("../calibration/homography_map_y.txt", linearized_homogeneous_array[1]);
-
 	// Read dimensions of new padded image
 	//TODO
 	//double image_size[2];
@@ -254,23 +250,21 @@ Mat image_processing::get_homography_frame_from_map(Mat frame){
 
 
 	// Warp image
-	Mat homography_frame = Mat::zeros(rows, cols, CV_8U);
+	Mat homography_frame = Mat::zeros(this->rows, this->cols, CV_8U);
 
 	int x, y;
 	uint f_x, f_y;
 	for (uint i=0; i < array_size; i++){
-		x = linearized_homogeneous_array[0][i];
-		y = linearized_homogeneous_array[1][i];
+		x = this->linearized_homogeneous_array[0][i];
+		y = this->linearized_homogeneous_array[1][i];
 
-		if ((x > 0 && x < cols) && (y > 0 && y < rows)){
-			f_x = i%cols;
-			f_y = i/cols;
+		if ((x > 0 && x < this->cols) && (y > 0 && y < this->rows)){
+			f_x = i%this->cols;
+			f_y = i/this->cols;
 			homography_frame.at<uint8_t>(y,x) = frame.at<uint8_t>(f_y,f_x);
 		}
 
 	}
-
-	imshow("WARPED", homography_frame);
 
     return homography_frame;
 }

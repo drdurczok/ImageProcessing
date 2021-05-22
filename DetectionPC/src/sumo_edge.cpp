@@ -116,10 +116,11 @@ void sumo_edge::find_tangent(Mat img){
 
 	/*Debug Draw Tangent Slope
 	cout << "Tangent: y = " << line_tangent.at<double>(1,0) << "x + " << line_tangent.at<double>(0,0) << endl;
-	polylines(HFrame, line_tangent_points, false, Scalar(255, 0, 0), 2, 8);
-	imshow("Tangent", HFrame);
+	polylines(img, line_tangent_points, false, Scalar(255, 0, 0), 2, 8);
+	imshow("Tangent", img);
 	waitKey(0);
 	*/
+	
 	#ifdef DEBUG
 	cout << "INFO: Calculating tangent offset." << endl;
 	#endif
@@ -171,11 +172,12 @@ void sumo_edge::find_tangent(Mat img){
 	/*Debug Draw Tangent
 	cout << "Tangent point: " << this->tangent_point << " [x, y]" << endl;
 	cout << "Tangent: y = " << line_tangent.at<double>(1,0) << "x + " << line_tangent.at<double>(0,0) << endl;
-	line_tangent_points = this->get_line_points(HFrame, line_tangent);
-	polylines(HFrame, line_tangent_points, false, Scalar(255, 0, 0), 2, 8);
-	imshow("Tangent", HFrame);
+	line_tangent_points = this->get_line_points(img, line_tangent);
+	polylines(img, line_tangent_points, false, Scalar(255, 0, 0), 2, 8);
+	imshow("Tangent", img);
 	waitKey(0);
 	*/
+	
 }
 
 /*

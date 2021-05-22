@@ -1,11 +1,11 @@
 //#define DEBUG
-#define BENCHMARK
+//#define BENCHMARK
 
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <iomanip>
 
-#include "image_processing.cpp"
+#include "image_capture.cpp"
 #include "sumo_main.cpp"
 
 using namespace cv;
@@ -27,18 +27,17 @@ image_core img_core(2,2);
 #endif
 /*------------------------------------------------*/
 
+image_capture camera;
 sumo_main sumo;
 
-void run(String);
+void run();
 
 uint num_of_images = 35;
 
 int main(){
 
 	#ifndef BENCHMARK
-	//String path_to_image = "../samples/Opponent/1.jpg";
-	String path_to_image = "../samples/1.jpg";
-	run(path_to_image);
+	run();
 	#else
 	benchmark();
 	#endif
@@ -49,15 +48,9 @@ int main(){
 }
 
 
-void run(String path_to_image){
-	//Take picture
+void run(){
 
-	Mat image = imread(path_to_image, IMREAD_COLOR);
-    if( image.empty() ){
-        cout << "Could not open or find the image" << endl;
-    }
-    imshow("afs", image);
-    waitKey(0);
+	Mat image = camera.take_image();
 
     sumo.run(image);
 
@@ -77,7 +70,6 @@ void benchmark(){
 	auto t_end  = high_resolution_clock::now();
 	duration<double, std::milli> ms_double[num_of_images];
 
-
 	auto t_start_total  = high_resolution_clock::now();
 
 	for(uint i = 1; i <= num_of_images; i++){
@@ -85,7 +77,11 @@ void benchmark(){
 
 		path_to_image = "../samples/" + to_string(i) + ".jpg";
 
-		run(path_to_image);
+		image = imread(path_to_image, IMREAD_COLOR);
+	    if( image.empty() ){
+	        cout << "Could not open or find the image" << endl;
+	    }
+    	sumo.run(image);
 
 		t_end = high_resolution_clock::now();
 

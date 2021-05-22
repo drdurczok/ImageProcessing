@@ -13,7 +13,7 @@ void sumo_main::run(Mat image){
 	robot_position = edge_detection.find_robot_position(image);
 	opponent_detection.calculate_opponent_position(image);
 
-	imshow("Dohyo", edge_detection.draw_dohyo());
-	waitKey(0);
+	//imshow("Dohyo", edge_detection.draw_dohyo());
+	//waitKey(0);
 
 }
