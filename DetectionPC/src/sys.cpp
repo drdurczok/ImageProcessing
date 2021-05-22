@@ -63,6 +63,7 @@ void set_tags(){
         architecture = "unknown";
     }
 
+    #ifdef DEBUG
     cout << "INFO: " << architecture << " architecture detected." << endl;
-
+    #endif
 }

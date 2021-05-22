@@ -10,7 +10,6 @@ using namespace std;
 class image_core {
   public:
     image_core();
-  	image_core(uint8_t, uint8_t);
   	cv::Mat load_image(string);
   	void display_image(uint8_t, cv::Mat);
   	void save_image(string, cv::Mat);

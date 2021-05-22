@@ -1,15 +1,29 @@
-#include <opencv2/highgui.hpp>
-#include <iomanip>
-#include "sys.cpp"
-
 //#define DEBUG
 //#define BENCHMARK
+//#define CALIBRATION
+
+#include <opencv2/highgui.hpp>
+#include <iostream>
+#include "sys.cpp"
 
 #include "image_capture.cpp"
 #include "sumo_main.cpp"
 
 using namespace cv;
 using namespace std;
+
+image_capture camera;
+sumo_main sumo;
+
+void run(){
+	while(true){
+		Mat image = camera.take_image();
+    	sumo.run(image);
+    	//TODO Send to STM32 through uart
+	}
+}
+
+
 
 /*------------------------------------------------*/
 #ifdef BENCHMARK
@@ -20,28 +34,21 @@ using std::chrono::duration;
 void benchmark();
 #endif
 /*------------------------------------------------*/
-#ifdef DEBUG
-#include "image_core.cpp"
+#ifdef CALIBRATION
 
-image_core img_core(2,2);
+void calibration();
 #endif
 /*------------------------------------------------*/
-
-image_capture camera;
-sumo_main sumo;
-
-void run();
-
-uint num_of_images = 35;
 
 int main(){
 	set_tags();
 
-	#ifndef BENCHMARK
-	Mat img = camera.take_image();
-	//run();
-	#else
+	#if   defined(BENCHMARK)
 	benchmark();
+	#elif defined(CALIBRATION)
+	calibration();
+	#else
+	run();
 	#endif
 
  	waitKey(0);
@@ -50,40 +57,42 @@ int main(){
 }
 
 
-void run(){
-
-	Mat image = camera.take_image();
-
-    sumo.run(image);
-
-	//Send to STM32 through uart
-	//cout << robot_position << endl;
-}
-
 
 #ifdef BENCHMARK
+
+Mat image;
+uint num_of_runs = 35;	//In the case of prepared samples, must be equal or less than the number of samples
+String path_to_image;
+
+void algorithms_on_samples(){
+	path_to_image = "../samples/" + to_string(i) + ".jpg";
+
+	image = imread(path_to_image, IMREAD_COLOR);
+    if( image.empty() ){
+        cout << "Could not open or find the image" << endl;
+    }
+	sumo.run(image);
+}
+
+void image_capture(){
+	image = camera.take_image();
+}
+
 void benchmark(){
 	cout << "Benchmarks: " << endl;
-	String path_to_image;
-	Mat image;
-	Point2f robot_position;
 
 	auto t_start  = high_resolution_clock::now();
 	auto t_end  = high_resolution_clock::now();
-	duration<double, std::milli> ms_double[num_of_images];
+	duration<double, std::milli> ms_double[num_of_runs];
 
 	auto t_start_total  = high_resolution_clock::now();
 
-	for(uint i = 1; i <= num_of_images; i++){
+	for(uint i = 1; i <= num_of_runs; i++){
 		t_start = high_resolution_clock::now();
 
-		path_to_image = "../samples/" + to_string(i) + ".jpg";
-
-		image = imread(path_to_image, IMREAD_COLOR);
-	    if( image.empty() ){
-	        cout << "Could not open or find the image" << endl;
-	    }
-    	sumo.run(image);
+		// ADD METHODS TO BE BENCHMARKED
+		image_capture();
+		//algorithms_on_samples();
 
 		t_end = high_resolution_clock::now();
 
@@ -95,13 +104,13 @@ void benchmark(){
 	auto t_end_total  = high_resolution_clock::now();
 	duration<double, std::milli> ms_double_total = t_end_total - t_start_total;
 
-	double avg_execution = ms_double_total.count()/num_of_images;
+	double avg_execution = ms_double_total.count()/num_of_runs;
 
 	double avg_deviation = 0;
 	double max_deviation = 0;
 
 	double temp_deviation = 0;
-	for (uint i = 0; i < num_of_images; i++){
+	for (uint i = 0; i < num_of_runs; i++){
 		temp_deviation = (ms_double[i].count()*1.0) - avg_execution;
 		avg_deviation += abs(temp_deviation);
 
@@ -109,7 +118,7 @@ void benchmark(){
 			max_deviation = temp_deviation;
 		}
 	}
-	avg_deviation /= num_of_images;
+	avg_deviation /= num_of_runs;
 
     cout << fixed;
 	cout << setprecision(3);
@@ -121,3 +130,8 @@ void benchmark(){
 }
 #endif
 
+void calibration(){
+	while(true){
+		camera.take_image();
+	}
+}

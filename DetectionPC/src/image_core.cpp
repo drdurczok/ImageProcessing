@@ -1,10 +1,8 @@
 #include "../inc/image_core.hpp"
 
 image_core::image_core(){
-	this->image_core(2,2);
-}
-
-image_core::image_core(uint8_t window_cols, uint8_t window_rows){
+	uint8_t window_cols = 2;
+	uint8_t window_rows = 2;
 	cout << "Initiating image core with " 
 		 << to_string(window_cols) << " by " 
 		 << to_string(window_rows) << " windows." 
