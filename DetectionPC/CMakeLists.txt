@@ -9,7 +9,7 @@ include_directories(/installation/OpenCV-/include/opencv4/)
 add_executable(detection ../src/main.cpp)
 
 # link OpenCV libraries
-target_link_libraries( detection /installation/OpenCV-/lib/libopencv_highgui.so /installation/OpenCV-/lib/libopencv_core.so /installation/OpenCV-/lib/libopencv_imgcodecs.so /installation/OpenCV-/lib/libopencv_imgproc.so /installation/OpenCV-/lib/libopencv_photo.so /installation/OpenCV-/lib/libopencv_calib3d.so)
+target_link_libraries( detection /installation/OpenCV-/lib/libopencv_highgui.so /installation/OpenCV-/lib/libopencv_core.so /installation/OpenCV-/lib/libopencv_imgcodecs.so /installation/OpenCV-/lib/libopencv_imgproc.so /installation/OpenCV-/lib/libopencv_photo.so /installation/OpenCV-/lib/libopencv_calib3d.so /installation/OpenCV-/lib/libopencv_videoio.so)
 
 # display opencv libs found
 MESSAGE("OpenCV_LIBS: " /installation/OpenCV-/lib/ )

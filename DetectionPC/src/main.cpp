@@ -37,7 +37,8 @@ uint num_of_images = 35;
 int main(){
 
 	#ifndef BENCHMARK
-	run();
+	Mat img = camera.take_image();
+	//run();
 	#else
 	benchmark();
 	#endif
