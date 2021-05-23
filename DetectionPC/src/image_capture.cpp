@@ -54,7 +54,7 @@ Mat image_capture::take_image(){
 	    i++;
 	}
 	
-	rotate(frame, frame, ROTATE_90_CLOCKWISE);
+	//rotate(frame, frame, ROTATE_90_CLOCKWISE);
 
 	this->save_image();
     return frame;

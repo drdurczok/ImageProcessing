@@ -1,2 +1,0 @@
-cd DetectionPC/build/
-./detection

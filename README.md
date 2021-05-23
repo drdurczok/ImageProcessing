@@ -93,5 +93,32 @@ cpu_freq -s 1008000
 # Read CPU parameters (including temperature)
 cpu_freq
 
-#NanoPI Neo image capture installs
+# NanoPI Neo image capture installs
 sudo apt-get install gstreamer1.0-plugins-good
+
+# _____________________________________________________________
+# NanoPi Neo create service:
+
+# Create service file
+sudo nano /etc/systemd/system/sumo.service
+
+# Add the following
+[Unit]
+Description=Sumo Robot Service
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+WorkingDirectory=/root/git/ImageProcessing/DetectionPC/build/
+ExecStart=/root/git/ImageProcessing/DetectionPC/build/detection
+
+[Install]
+WantedBy=multi-user.target
+
+# Start service
+systemctl start sumo
+
+# Enable service
+systemctl enable sumo
