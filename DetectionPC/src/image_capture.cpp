@@ -8,9 +8,7 @@ image_capture::image_capture(){
     int apiID = cv::CAP_ANY;      // 0 = autodetect default API
 
     if(architecture == "ARM"){
-    	#ifdef DEBUG
-	    cout << "INFO: Changing video stream to GStreamer." << endl;
-	    #endif
+	    Debug("Changing video stream to GStreamer.");
 	    apiID = cv::CAP_GSTREAMER;
     }
 
@@ -20,12 +18,10 @@ image_capture::image_capture(){
     cap.set(CAP_PROP_FRAME_HEIGHT,240);
     // check if we succeeded
     if (!cap.isOpened()) {
-        cout << "ERROR: Unable to open camera." << endl;
+        CERR("Unable to open camera.");
     }
     else{
-    	#ifdef DEBUG
-        cout << "INFO: Camera opened successfully." << endl;
-    	#endif
+        Debug("Camera opened successfully.");
     }
 
     // Prepare folder for saving images
@@ -50,7 +46,7 @@ Mat image_capture::take_image(){
 	    cap.read(frame);
 	    // check if we succeeded
 	    if (frame.empty()) {
-	        cout << "ERROR: blank frame grabbed." << endl;
+	        CERR("Blank frame grabbed.");
 	    }
 	    else{
 	    	break;
@@ -70,7 +66,5 @@ void image_capture::save_image(){
 	string path = path_to_saves + to_string(img_number) + img_extension;
 	imwrite(path, frame);
 
-	#ifdef DEBUG
-	cout << path << endl;
-	#endif
+	Debug("Saved image to " + path);
 }

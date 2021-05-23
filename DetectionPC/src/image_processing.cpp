@@ -27,11 +27,9 @@ float image_processing::getCircleRadius(){
 
 
 void image_processing::prepare_image(Mat input, Mat & output){
-	#ifdef DEBUG
-	cout << "INFO: Filtering image." << endl;
-	#endif
+	Debug("Filtering image.");
 	if (input.empty()){
-		cout << "Error: missing image\n\n" << endl;
+		CERR("Missing image.");
 	}
 	
 	//Convert image
@@ -185,7 +183,7 @@ void image_processing::read_file(string path, int16_t array[]){
     
     File.open(path);
     if (!File) {
-        cout << "ERROR: Unable to open file" << endl;;
+        CERR("Unable to open file");
         exit(1); // terminate with error
     }
     

@@ -1,3 +1,26 @@
+/*--------------------------------------------------------------------*/
+/*                      Output Handlers                               */
+/*--------------------------------------------------------------------*/
+#define DEBUG
+
+#include <iostream>
+#include <string> 
+
+using namespace std;
+
+#define CERR(x)  cout << "ERROR: " << x << endl;
+
+#ifdef DEBUG
+#define Debug(x) cout << "INFO: " << x << endl;
+#define CWARN(x) cout << "WARNING: " << x << endl;
+#else
+#define Debug(x) 
+#define CWARN(x)
+#endif 
+
+/*--------------------------------------------------------------------*/
+/*                      System architecture                           */
+/*--------------------------------------------------------------------*/
 extern "C" {
     const char *getBuild() { //Get current architecture, detect nearly every architecture.
         #if defined(__x86_64__) || defined(_M_X64)
@@ -46,10 +69,6 @@ extern "C" {
     }
 }
 
-#include <iostream>
-
-using namespace std;
-
 string architecture;
 
 void set_tags(){
@@ -63,7 +82,5 @@ void set_tags(){
         architecture = "unknown";
     }
 
-    #ifdef DEBUG
-    cout << "INFO: " << architecture << " architecture detected." << endl;
-    #endif
+    Debug(architecture + " architecture detected.");
 }

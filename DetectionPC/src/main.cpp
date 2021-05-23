@@ -1,25 +1,25 @@
-//#define DEBUG
 //#define BENCHMARK
 //#define CALIBRATION
 
 #include <opencv2/highgui.hpp>
-#include <iostream>
 #include "sys.cpp"
 
 #include "image_capture.cpp"
 #include "sumo_main.cpp"
+#include "communications.cpp"
 
 using namespace cv;
 using namespace std;
 
 image_capture camera;
 sumo_main sumo;
+communications comms;
 
 void run(){
 	while(true){
 		Mat image = camera.take_image();
     	sumo.run(image);
-    	//TODO Send to STM32 through uart
+    	comms.send_uart();
 	}
 }
 

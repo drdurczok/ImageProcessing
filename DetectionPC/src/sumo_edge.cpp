@@ -19,9 +19,7 @@ Point2f sumo_edge::find_robot_position(Mat image){
 
 Point2f sumo_edge::calculate_robot_position(){
     //Find robot as a point
-    #ifdef DEBUG
-    cout << "INFO: Calculating robot position." << endl;
-    #endif
+    Debug("Calculating robot position.");
     Point2f camera_point_homography = this->get_camera_coordinates();
 
     int cent_x = this->outer_ring_radius_pixels - this->circle_center.x;
@@ -54,7 +52,7 @@ void sumo_edge::calculate_ring_center(Mat image){
 		this->find_circle_center();
 	}
 	else{
-		cout << "WARNING: Threshold not found for image." << endl;
+		CWARN("Threshold not found for image.");
 	}
 }
 
@@ -69,9 +67,7 @@ void sumo_edge::find_tangent(Mat img){
 	vector<Point2f> img_floor = this->getFloorPixels_Points(img);
 	vector<Point2f> img_ceil = this->getCeilingPixels_Points(img);
 
-	#ifdef DEBUG
-	cout << "INFO: Calculating tangent slope." << endl;
-	#endif
+	Debug("Calculating tangent slope.");
 	//Definition of both lines, y = ax + b
  	Mat line_floor = this->TotalLeastSquares(img_floor);
 	Mat line_ceil = this->TotalLeastSquares(img_ceil);
@@ -84,9 +80,7 @@ void sumo_edge::find_tangent(Mat img){
 		this->line_tangent.at<double>(0,0) = (line_floor.at<double>(0, 0) + line_ceil.at<double>(0, 0)) / 2;
 	}
 	else{
-		#ifdef DEBUG
-		cout << "WARNING: The calculated tangents have a large disparity. Defaulting to floor values." << endl;
-		#endif
+		CWARN("The calculated tangents have a large disparity. Defaulting to floor values.");
 		this->line_tangent.at<double>(1,0) = line_floor.at<double>(1, 0);
 		this->line_tangent.at<double>(0,0) = line_floor.at<double>(0, 0);
 	}
@@ -121,9 +115,7 @@ void sumo_edge::find_tangent(Mat img){
 	waitKey(0);
 	*/
 	
-	#ifdef DEBUG
-	cout << "INFO: Calculating tangent offset." << endl;
-	#endif
+	Debug("Calculating tangent offset.");
 	uint pixels_found_count = 0;
 	uint tangent_shift = 0;
 	uint x, y;
@@ -186,9 +178,7 @@ void sumo_edge::find_tangent(Mat img){
  *		Offset = y - Slope * x
  */
 void sumo_edge::find_normal(){
-	#ifdef DEBUG
-	cout << "INFO: Calculating normal." << endl;
-	#endif
+	Debug("Calculating normal.");
 	this->line_normal = Mat::zeros(2, 2, CV_64F);
 
 	//Condition to avoid dividing by zero
@@ -358,7 +348,7 @@ bool sumo_edge::calculate_threshold_image(Mat input, Mat & result){
 			delta_step_area_prev = delta_step_area;
 		}
 		else if (contours.size() == 0){
-			cout << "INFO: Found no contours" << endl;
+			Debug("Found no contours");
 		}
 		else if (min_threshold == starting_thresh){
 			return false;
@@ -370,10 +360,8 @@ bool sumo_edge::calculate_threshold_image(Mat input, Mat & result){
 		result = output.clone();
 	}
 
-	#ifdef DEBUG
-	cout << "Min threshold: " << min_threshold << endl;
-	cout << "Area:          " << area_prev << endl;
-	#endif
+	Debug("Min threshold: " + to_string(min_threshold));
+	Debug("Area:          " + to_string(area_prev));
 
 	return true;
 }
@@ -406,9 +394,8 @@ Mat sumo_edge::draw_dohyo(){
 
     //cout << "Circle center:            " << this->circle_center << endl;
     //cout << "Robot Point:              " << robot_point   << endl;	
-    #ifdef DEBUG
-    cout << "Robot distance to center: " << this->robot.distance_to_center/10 << " cm" << endl;
-    #endif
+    Debug("Robot distance to center: " + to_string(this->robot.distance_to_center/10) + " cm");
+
 	//Draw viewing angle lines
 	double viewing_angle = 40 * PI/180; //deg to rad
 	double view_ang_1 = PI/2 + viewing_angle/2;
