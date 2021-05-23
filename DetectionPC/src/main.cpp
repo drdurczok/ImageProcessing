@@ -17,6 +17,8 @@ communications comms;
 
 void run(){
 	while(true){
+		BREAK_LINE();
+		
 		Mat image = camera.take_image();
     	sumo.run(image);
     	comms.send_uart();

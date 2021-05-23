@@ -347,9 +347,6 @@ bool sumo_edge::calculate_threshold_image(Mat input, Mat & result){
 			area_prev = area;
 			delta_step_area_prev = delta_step_area;
 		}
-		else if (contours.size() == 0){
-			Debug("Found no contours");
-		}
 		else if (min_threshold == starting_thresh){
 			return false;
 		}
@@ -360,10 +357,15 @@ bool sumo_edge::calculate_threshold_image(Mat input, Mat & result){
 		result = output.clone();
 	}
 
-	Debug("Min threshold: " + to_string(min_threshold));
-	Debug("Area:          " + to_string(area_prev));
-
-	return true;
+	if(area_prev < 999999){
+		Debug("Min threshold: " + to_string(min_threshold));
+		Debug("Area:          " + to_string(area_prev));
+		return true;
+	}
+	else{
+		CWARN("Found no contours");
+		return false;
+	}
 }
 
 /*______________________VISUAL___________________________*/
