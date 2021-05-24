@@ -1,5 +1,5 @@
 //#define BENCHMARK
-//#define CALIBRATION
+#define CALIBRATION
 
 #include <opencv2/highgui.hpp>
 #include "sys.cpp"
@@ -18,7 +18,7 @@ communications comms;
 void run(){
 	while(true){
 		BREAK_LINE();
-		
+
 		Mat image = camera.take_image();
     	sumo.run(image);
     	comms.send_uart();
@@ -66,7 +66,7 @@ Mat image;
 uint num_of_runs = 35;	//In the case of prepared samples, must be equal or less than the number of samples
 String path_to_image;
 
-void algorithms_on_samples(){
+void algorithms_on_samples(uint i){
 	path_to_image = "../samples/" + to_string(i) + ".jpg";
 
 	image = imread(path_to_image, IMREAD_COLOR);
@@ -94,7 +94,7 @@ void benchmark(){
 
 		// ADD METHODS TO BE BENCHMARKED
 		image_capture();
-		//algorithms_on_samples();
+		//algorithms_on_samples(i);
 
 		t_end = high_resolution_clock::now();
 
@@ -135,5 +135,6 @@ void benchmark(){
 void calibration(){
 	while(true){
 		camera.take_image();
+		camera.save_image();
 	}
 }

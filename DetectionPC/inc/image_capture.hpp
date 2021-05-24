@@ -15,6 +15,7 @@ class image_capture {
     ~image_capture();
 
     Mat take_image();
+    void save_image();
 
   private:
     VideoCapture cap;
@@ -24,8 +25,6 @@ class image_capture {
     String path_to_saves;
     String img_extension;
     uint16_t img_number;
-
-    void save_image();
 };
 
 #endif
