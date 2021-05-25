@@ -143,7 +143,7 @@ void image_calibration::calibrate(){
 //Replacement for SolvePnP()
 void image_calibration::find_homography_matrix(){
     //Get image
-    string path = "../calibration/homography_imgs/3.jpg";
+    string path = "../calibration/homography_imgs/1.jpg";
     Mat frame = imread(path);
 
 

@@ -233,9 +233,9 @@ Mat image_processing::get_homography_frame(Mat frame){
 	//Mat large_frame = Mat::zeros(frame.size().height*2, frame.size().width*2, CV_8UC3);
 	//frame.copyTo(large_frame(Rect((large_frame.cols - frame.cols)/2, (large_frame.rows - frame.rows)/2, frame.cols, frame.rows)));
 
-    //warpPerspective(frame, homography_frame, this->homographyMatrixInv, frame.size());
+    warpPerspective(frame, homography_frame, this->homographyMatrixInv, frame.size());
 
-    homography_frame = this->get_homography_frame_from_map(frame);
+    //homography_frame = this->get_homography_frame_from_map(frame);
 
     return homography_frame;
 }

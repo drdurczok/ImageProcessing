@@ -10,18 +10,23 @@ class sumo_edge : private image_processing {
     Mat distance_to_edge(Mat);
     Mat distance_to_center(Mat);
 
-	Point2f find_robot_position(Mat);
+	bool   find_robot_position(Mat);
+    Point2f get_robot_position();
 
-    Point2f calculate_robot_position();
-    void    calculate_ring_center(Mat);
+    void calculate_robot_position();
+    bool calculate_ring_center(Mat);
 
 	Mat draw_homography_frame(Mat);
     Mat draw_dohyo();
+    Mat draw_lines(Mat);
 
   private:
     struct position {
-	  double distance_to_center;
+      double distance_to_center;
+      Point2f coordinates;
 	} robot;
+
+    bool success;
 
 	Mat line_tangent = Mat::zeros(2, 2, CV_64F);
 	Mat line_normal  = Mat::zeros(2, 2, CV_64F);

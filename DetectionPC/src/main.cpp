@@ -1,5 +1,5 @@
-//#define BENCHMARK
-#define CALIBRATION
+#define BENCHMARK
+//#define CALIBRATION
 
 #include <opencv2/highgui.hpp>
 #include "sys.cpp"
@@ -63,11 +63,11 @@ int main(){
 #ifdef BENCHMARK
 
 Mat image;
-uint num_of_runs = 35;	//In the case of prepared samples, must be equal or less than the number of samples
+uint num_of_runs = 1260;	//In the case of prepared samples, must be equal or less than the number of samples
 String path_to_image;
 
 void algorithms_on_samples(uint i){
-	path_to_image = "../samples/" + to_string(i) + ".jpg";
+	path_to_image = "../samples/saved_ring/" + to_string(i) + ".jpg";
 
 	image = imread(path_to_image, IMREAD_COLOR);
     if( image.empty() ){
@@ -81,8 +81,8 @@ void image_capture(){
 }
 
 void benchmark(){
-	cout << "Benchmarks: " << endl;
-
+	image_capture();
+	for (int j = 0; j<1000000; j++){}
 	auto t_start  = high_resolution_clock::now();
 	auto t_end  = high_resolution_clock::now();
 	duration<double, std::milli> ms_double[num_of_runs];
@@ -93,8 +93,8 @@ void benchmark(){
 		t_start = high_resolution_clock::now();
 
 		// ADD METHODS TO BE BENCHMARKED
-		image_capture();
-		//algorithms_on_samples(i);
+		//image_capture();
+		algorithms_on_samples(i);
 
 		t_end = high_resolution_clock::now();
 

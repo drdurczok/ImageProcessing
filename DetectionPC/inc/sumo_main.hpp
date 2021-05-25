@@ -18,6 +18,8 @@ class sumo_main : private image_processing {
   private:
 	sumo_edge     	 edge_detection;
 	sumo_opponent 	 opponent_detection;
+
+	void debug(Mat);
 };
 
 #endif

@@ -10,10 +10,18 @@ void sumo_main::run(Mat image){
 	Point2f robot_position;
 	Point2f opponent_position;
 
-	robot_position = edge_detection.find_robot_position(image);
+	edge_detection.find_robot_position(image);
+	robot_position = edge_detection.get_robot_position();
 	opponent_detection.calculate_opponent_position(image);
 
-	//imshow("Dohyo", edge_detection.draw_dohyo());
-	//waitKey(0);
+	debug(image);
+}
 
+void sumo_main::debug(Mat image){
+	imshow("Lines", edge_detection.draw_lines(image));
+
+	namedWindow("Dohyo", cv::WINDOW_FREERATIO);
+	imshow("Dohyo", edge_detection.draw_dohyo());
+	resizeWindow("Dohyo", 500, 500);
+	waitKey(0);
 }

@@ -72,13 +72,14 @@ class image_processing {
     Mat homographyMatrix;
     Mat homographyMatrixInv;
 
-    uint16_t rows = 320;
-    uint16_t cols = 240;
+    uint16_t rows = 240;
+    uint16_t cols = 320;
     uint32_t array_size = cols*rows;
     int16_t linearized_homogeneous_array[2][320*240];
 
     double distanceToPlaneNormal;
 
+  protected:
     /*______________________DISTANCE_________________________________*/
     Point2f camera_coordinates;
     double pix_to_mm;

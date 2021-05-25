@@ -1,23 +1,36 @@
 #include "../inc/sumo_edge.hpp"
 
 sumo_edge::sumo_edge(){
-	outer_ring_diameter_pixels = 1550;
-    outer_ring_radius_pixels = outer_ring_diameter_pixels / 2;
+	this->outer_ring_diameter_pixels = 1540 * this->pix_to_mm;
+    this->outer_ring_radius_pixels = outer_ring_diameter_pixels / 2;
+
+    this->success = false;
 }
 
-Point2f sumo_edge::find_robot_position(Mat image){
-	this->calculate_ring_center(image);
+bool sumo_edge::find_robot_position(Mat image){
+	this-> success = false;
 
-	this->robot.distance_to_center = this->distance_camera_to_pixel(this->circle_center);
+	bool found_center = this->calculate_ring_center(image);
+	
+	if (found_center){
+		this->robot.distance_to_center = this->distance_camera_to_pixel(this->circle_center);
 
-	Point2f robot_point = this->calculate_robot_position();
+		this->calculate_robot_position();
 
-	return robot_point;
+		this->success = true;
+	}
+
+	return this->success;
 }
+
+Point2f sumo_edge::get_robot_position(){
+	return robot.coordinates;
+}
+
 
 /*_________________________ROBOT______________________________*/
 
-Point2f sumo_edge::calculate_robot_position(){
+void sumo_edge::calculate_robot_position(){
     //Find robot as a point
     Debug("Calculating robot position.");
     Point2f camera_point_homography = this->get_camera_coordinates();
@@ -29,7 +42,7 @@ Point2f sumo_edge::calculate_robot_position(){
     	cent_x + camera_point_homography.x ,
     	cent_y + camera_point_homography.y);
 
-    return robot_point;
+    robot.coordinates = robot_point;
 }
 
 
@@ -41,7 +54,7 @@ Point2f sumo_edge::calculate_robot_position(){
  *	STEP 3	-	Calculate the normal through the point of the tangent
  *	STEP 4	-	Find center of circle
  */
-void sumo_edge::calculate_ring_center(Mat image){
+bool sumo_edge::calculate_ring_center(Mat image){
 	bool success = this->calculate_threshold_image(image, image);
 
 	if (success){
@@ -53,7 +66,10 @@ void sumo_edge::calculate_ring_center(Mat image){
 	}
 	else{
 		CWARN("Threshold not found for image.");
+		return false;
 	}
+
+	return true;
 }
 
 /*
@@ -85,91 +101,31 @@ void sumo_edge::find_tangent(Mat img){
 		this->line_tangent.at<double>(0,0) = line_floor.at<double>(0, 0);
 	}
 
-	vector<Point> line_tangent_points = this->get_line_points(img, this->line_tangent);
+	Debug("Calculating tangent point.");
+	//Redefine line as: ax + by + c = 0
+	double m_a, m_b, m_c;
+	m_a = this->line_tangent.at<double>(1,0);
+	m_b = -1;
+	m_c = this->line_tangent.at<double>(0,0);
 
-	//Remove points that are out of image frame from top
-	for (uint i = 0; i < line_tangent_points.size(); i++){
-		if(line_tangent_points[i].y < 0){
-			line_tangent_points.erase(line_tangent_points.begin());
-			i--;
-		}
-		else{
-			break;
-		}
-	}
+	//Find point on top edge furthest from tangent
+	double dist, dist_largest = 0;
 
-	//Remove points that are out of image frame from bottom
-	for (uint i = line_tangent_points.size()-1; i > 0; i--){
-		if(line_tangent_points[i].y > img.size().height){
-			line_tangent_points.erase(line_tangent_points.end());
-		}
-		else{
-			break;
+	for (auto point : img_ceil){
+		dist = abs(m_a*point.x + m_b*point.y + m_c) / sqrt(pow(m_a,2) + pow(m_b,2));
+
+		if (dist > dist_largest){
+			dist_largest = dist;
+			this->tangent_point = point;
 		}
 	}
 
-	/*Debug Draw Tangent Slope
-	cout << "Tangent: y = " << line_tangent.at<double>(1,0) << "x + " << line_tangent.at<double>(0,0) << endl;
-	polylines(img, line_tangent_points, false, Scalar(255, 0, 0), 2, 8);
-	imshow("Tangent", img);
-	waitKey(0);
-	*/
-	
-	Debug("Calculating tangent offset.");
-	uint pixels_found_count = 0;
-	uint tangent_shift = 0;
-	uint x, y;
-	vector<Point> tangent_points;
-	vector<Point> tangent_points_buffer;
-
-	while(true){
-		pixels_found_count = 0;
-
-		//Iterate through all points on line in image
-		for (uint i = 0; i < line_tangent_points.size(); i++){
-			//Condition to avoid image overflow
-			if (line_tangent_points[i].y > tangent_shift){
-				//Calculate image coordinates
-				x = line_tangent_points[i].x;
-				y = (line_tangent_points[i].y - tangent_shift);
-				//cout << "tan: " << line_tangent_points[i].y << " shift: " << tangent_shift << endl;
-				//cout << "x: " << x << ", y: " << y << endl;
-				//Check value of point
-				if (img.at<char>(y, x) != 0){
-					tangent_points_buffer.push_back(Point2f(x, y));
-					pixels_found_count++;
-				}
-			}
-		}
-
-		if (pixels_found_count == 0){
-			break;
-		}
-		else if (pixels_found_count < 5){
-			tangent_points = tangent_points_buffer;
-			break;
-		}
-		else{
-			tangent_points = tangent_points_buffer;
-			tangent_points_buffer.clear();
-		}
-
-		tangent_shift++;
-	}
-
-	this->tangent_point = tangent_points[ tangent_points.size()/2 ];
-
-	this->line_tangent.at<double>(0,0) = this->line_tangent.at<double>(0,0) - tangent_shift;
-
-	/*Debug Draw Tangent
-	cout << "Tangent point: " << this->tangent_point << " [x, y]" << endl;
-	cout << "Tangent: y = " << line_tangent.at<double>(1,0) << "x + " << line_tangent.at<double>(0,0) << endl;
-	line_tangent_points = this->get_line_points(img, line_tangent);
-	polylines(img, line_tangent_points, false, Scalar(255, 0, 0), 2, 8);
-	imshow("Tangent", img);
-	waitKey(0);
-	*/
-	
+	ostringstream debug_msg;
+	debug_msg << "Tangent point: " << this->tangent_point << " [x, y]";
+	Debug(debug_msg.str());
+	debug_msg.clear();
+	debug_msg << "Tangent: y = " << line_tangent.at<double>(1,0) <<  "x + " << line_tangent.at<double>(0,0);
+	Debug(debug_msg.str());
 }
 
 /*
@@ -187,23 +143,20 @@ void sumo_edge::find_normal(){
 		this->line_normal.at<double>(1,0) = -1 / this->line_tangent.at<double>(1,0);
 	}
 	else {
-		cout << "ERROR: Dividing by zero (line_tangent A)." << endl;
+		CERR("Dividing by zero (line_tangent A).");
 	}
 
 	//Calculate offset of normal through tangent point
 	this->line_normal.at<double>(0,0) = this->tangent_point.y - this->line_normal.at<double>(1,0) * this->tangent_point.x;
 
-	/*Debug Draw Normal
-	cout << "Normal: y = " << this->line_normal.at<double>(1,0) << "x + " << this->line_normal.at<double>(0,0) << endl;
-	vector<Point> line_normal_points = this->get_line_points(HFrame, this->line_normal);
-	polylines(HFrame, line_normal_points, false, Scalar(255, 0, 0), 2, 8);
-	imshow("Tangent", HFrame);
-	waitKey(0);
-	*/
+	ostringstream debug_msg;
+	debug_msg << "Normal: y = " << this->line_normal.at<double>(1,0) << "x + " << this->line_normal.at<double>(0,0);
+	Debug(debug_msg.str());
 }
 
 /*
  *	Find center of circle
+
  *		The center of the circle is calculated by finding the point from the tangent point that is
  *		a distance of the radius away along the normal line.
  *		x1 = x0 +- sqrt( distance^2 / (1 + slope^2) ) 
@@ -387,27 +340,43 @@ Mat sumo_edge::draw_dohyo(){
 	string path_to_image = "../calibration/Dohyo.jpg";
     Mat dohyo = imread(path_to_image, IMREAD_COLOR);
 
-    Point2f robot_point= this->calculate_robot_position();
+    if (this->success){
+	    this->calculate_robot_position();
 
-    circle(dohyo, robot_point, 20, (0, 0, 255), -1);
-	//namedWindow("dohyo", WINDOW_FREERATIO);	
-    //imshow("dohyo", dohyo);
-    //waitKey(0);
+	    circle(dohyo, robot.coordinates, 20, (0, 0, 255), -1);
+		//namedWindow("dohyo", WINDOW_FREERATIO);	
+	    //imshow("dohyo", dohyo);
+	    //waitKey(0);
 
-    //cout << "Circle center:            " << this->circle_center << endl;
-    //cout << "Robot Point:              " << robot_point   << endl;	
-    Debug("Robot distance to center: " + to_string(this->robot.distance_to_center/10) + " cm");
+	    //cout << "Circle center:            " << this->circle_center << endl;
+	    //cout << "Robot Point:              " << robot.coordinates   << endl;	
+	    Debug("Robot distance to center: " + to_string(this->robot.distance_to_center/10) + " cm");
 
-	//Draw viewing angle lines
-	double viewing_angle = 40 * PI/180; //deg to rad
-	double view_ang_1 = PI/2 + viewing_angle/2;
-	double view_ang_2 = PI/2 - viewing_angle/2;
+		//Draw viewing angle lines
+		double viewing_angle = 72 * PI/180; //deg to rad
+		double view_ang_1 = PI/2 + viewing_angle/2;
+		double view_ang_2 = PI/2 - viewing_angle/2;
 
-	vector<Point> line_view_1_points = this->get_fov_line_points(dohyo, robot_point, view_ang_1);
-	polylines(dohyo, line_view_1_points, false, Scalar(255, 0, 0), 2, 8);
+		vector<Point> line_view_1_points = this->get_fov_line_points(dohyo, robot.coordinates, view_ang_1);
+		polylines(dohyo, line_view_1_points, false, Scalar(255, 0, 0), 2, 8);
 
-	vector<Point> line_view_2_points = this->get_fov_line_points(dohyo, robot_point, view_ang_2);
-	polylines(dohyo, line_view_2_points, false, Scalar(255, 0, 0), 2, 8);
+		vector<Point> line_view_2_points = this->get_fov_line_points(dohyo, robot.coordinates, view_ang_2);
+		polylines(dohyo, line_view_2_points, false, Scalar(255, 0, 0), 2, 8);
+	}
 
     return dohyo;
+}
+
+Mat sumo_edge::draw_lines(Mat frame){
+	if (this->success){
+		vector<Point> line_tangent_points = this->get_line_points(frame, this->line_tangent);
+		polylines(frame, line_tangent_points, false, Scalar(255, 0, 0), 2, 8);
+
+		vector<Point> line_normal_points = this->get_line_points(frame, this->line_normal);
+		polylines(frame, line_normal_points, false, Scalar(255, 0, 0), 2, 8);
+
+	    circle(frame, this->tangent_point, 5, (0, 0, 255), -1);
+	}
+
+	return frame;
 }
