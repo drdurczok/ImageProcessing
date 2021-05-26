@@ -16,6 +16,8 @@ class sumo_edge : private image_processing {
     void calculate_robot_position();
     bool calculate_ring_center(Mat);
 
+    Mat isolate_dohyo(Mat);
+
 	Mat draw_homography_frame(Mat);
     Mat draw_dohyo();
     Mat draw_lines(Mat);
@@ -43,6 +45,9 @@ class sumo_edge : private image_processing {
 
     /*______________________THRESHOLD________________________________*/
     bool calculate_threshold_image(Mat, Mat &);
+
+    vector<Point2f> img_floor;
+    vector<Point2f> img_ceil;
 
     /*______________________ALGORITHMS_____________________________*/
     Mat TotalLeastSquares(vector<Point2f>);

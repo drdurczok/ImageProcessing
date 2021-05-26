@@ -17,7 +17,9 @@ void sumo_opponent::calculate_opponent_position(Mat image){
     //Mat image_copy;
     //cvtColor(image, image_copy, COLOR_GRAY2BGR);
 
-    Mat img_edge = this->find_edge(image, edge_filter_methods::SOBEL);
+    Mat img_edge = this->find_edge(image, edge_filter_methods::SOBELY);
+
+    imshow("EDGE", img_edge);
 
     // Probabilistic Hough Line Transform
     /*

@@ -49,6 +49,9 @@ Mat image_processing::find_edge(Mat input, edge_filter_methods selection){
 	    case SOBEL:
 	    	output = this->sobelEdgeDetection(input);
 	    	break;
+	    case SOBELY:
+	    	output = this->sobelYEdgeDetection(input);
+	    	break;
 	    case FLOOR_PIXELS:
 	    	output = this->getFloorPixels(input);
 	    	break;
@@ -80,6 +83,24 @@ Mat image_processing::sobelEdgeDetection(Mat input){
 
 	Mat output;
 	sobel.convertTo(output, CV_8UC1, 1);
+
+	return output;
+}
+
+Mat image_processing::sobelYEdgeDetection(Mat input){
+	Mat sobel, sobelx, sobely;
+
+	/* 
+	 * Sobel (input, output, ddepth, dx, dy, ksize=3, scale=1, delta=0, borderType=BORDER_DEFAULT)
+	 *		ddepth - output image depth
+	 *		dx, dy - order of the derivative
+	 *		ksize  - size of the extended Sobel kernel; it must be 1, 3, 5, or 7
+	 */
+
+	Sobel(input, sobely, CV_64F, 0, 1, 5);  // y
+
+	Mat output;
+	sobely.convertTo(output, CV_8UC1, 1);
 
 	return output;
 }

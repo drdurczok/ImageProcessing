@@ -16,7 +16,7 @@ using namespace cv;
 
 class image_processing {
   public:
-    enum edge_filter_methods{SOBEL,FLOOR_PIXELS,CEILING_PIXELS};
+    enum edge_filter_methods{SOBEL,SOBELY,FLOOR_PIXELS,CEILING_PIXELS};
 
     image_processing();
 
@@ -52,6 +52,7 @@ class image_processing {
 
     /*______________________EDGE DETECTION___________________________*/
     Mat sobelEdgeDetection(Mat);
+    Mat sobelYEdgeDetection(Mat);
     Mat getFloorPixels(Mat);
     Mat getCeilingPixels(Mat);
 

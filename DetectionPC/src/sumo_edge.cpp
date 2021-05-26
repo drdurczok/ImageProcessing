@@ -81,8 +81,8 @@ bool sumo_edge::calculate_ring_center(Mat image){
  *		The offset is calculated by raising the tangent untill no more pixels are found above it.
  */
 void sumo_edge::find_tangent(Mat img){
-	vector<Point2f> img_floor = this->getFloorPixels_Points(img);
-	vector<Point2f> img_ceil = this->getCeilingPixels_Points(img);
+	this->img_floor = this->getFloorPixels_Points(img);
+	this->img_ceil = this->getCeilingPixels_Points(img);
 
 	Debug("Calculating tangent slope.");
 	//Definition of both lines, y = ax + b
@@ -310,6 +310,30 @@ bool sumo_edge::calculate_threshold_image(Mat input, Mat & result){
 		return false;
 	}
 }
+
+/*______________________POST RENDER______________________*/
+/*
+ *	Creates new image that only includes the Dohyo surface and thresholds.
+ */
+Mat sumo_edge::isolate_dohyo(Mat image){
+	Mat isolated_frame = Mat::zeros(image.size().height, image.size().width, CV_8U);
+
+	uint avg_px_val = 140;
+
+    if (this->success){
+		for (auto point : this->img_floor){
+			for (uint y = image.size().height-1; y > point.y; y--){
+				isolated_frame.at<uint8_t>(y, point.x) = image.at<uint8_t>(y, point.x);
+			}
+		}
+
+		threshold(isolated_frame, isolated_frame, avg_px_val, 255, THRESH_BINARY);
+
+	}
+
+	return isolated_frame;
+}
+
 
 /*______________________VISUAL___________________________*/
 
