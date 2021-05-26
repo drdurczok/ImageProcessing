@@ -1,7 +1,7 @@
 #include "../inc/sumo_edge.hpp"
 
 sumo_edge::sumo_edge(){
-	this->outer_ring_diameter_pixels = 1540 * this->pix_to_mm;
+	this->outer_ring_diameter_pixels = 1540 / this->pix_to_mm;
     this->outer_ring_radius_pixels = outer_ring_diameter_pixels / 2;
 
     this->success = false;
@@ -35,6 +35,7 @@ void sumo_edge::calculate_robot_position(){
     Debug("Calculating robot position.");
     Point2f camera_point_homography = this->get_camera_coordinates();
 
+    // Translate to Dohyo by computing the difference between real Dohyo center and acquired
     int cent_x = this->outer_ring_radius_pixels - this->circle_center.x;
     int cent_y = this->outer_ring_radius_pixels - this->circle_center.y;
 
@@ -119,13 +120,6 @@ void sumo_edge::find_tangent(Mat img){
 			this->tangent_point = point;
 		}
 	}
-
-	ostringstream debug_msg;
-	debug_msg << "Tangent point: " << this->tangent_point << " [x, y]";
-	Debug(debug_msg.str());
-	debug_msg.clear();
-	debug_msg << "Tangent: y = " << line_tangent.at<double>(1,0) <<  "x + " << line_tangent.at<double>(0,0);
-	Debug(debug_msg.str());
 }
 
 /*
@@ -148,10 +142,6 @@ void sumo_edge::find_normal(){
 
 	//Calculate offset of normal through tangent point
 	this->line_normal.at<double>(0,0) = this->tangent_point.y - this->line_normal.at<double>(1,0) * this->tangent_point.x;
-
-	ostringstream debug_msg;
-	debug_msg << "Normal: y = " << this->line_normal.at<double>(1,0) << "x + " << this->line_normal.at<double>(0,0);
-	Debug(debug_msg.str());
 }
 
 /*
@@ -170,7 +160,7 @@ void sumo_edge::find_circle_center(){
     if (this->circle_center.y < 0){
     	this->circle_center.x = this->tangent_point.x + sqr;
         this->circle_center.y = this->circle_center.x * this->line_normal.at<double>(1,0) + this->line_normal.at<double>(0,0);
-    }	
+    }
 }
 
 
@@ -350,7 +340,6 @@ Mat sumo_edge::draw_dohyo(){
 
 	    //cout << "Circle center:            " << this->circle_center << endl;
 	    //cout << "Robot Point:              " << robot.coordinates   << endl;	
-	    Debug("Robot distance to center: " + to_string(this->robot.distance_to_center/10) + " cm");
 
 		//Draw viewing angle lines
 		double viewing_angle = 72 * PI/180; //deg to rad
@@ -362,6 +351,24 @@ Mat sumo_edge::draw_dohyo(){
 
 		vector<Point> line_view_2_points = this->get_fov_line_points(dohyo, robot.coordinates, view_ang_2);
 		polylines(dohyo, line_view_2_points, false, Scalar(255, 0, 0), 2, 8);
+
+		ostringstream debug_msg;
+		debug_msg << "Tangent: y = " << line_tangent.at<double>(1,0) <<  "x + " << line_tangent.at<double>(0,0);
+		Debug(debug_msg.str());
+		debug_msg.clear(); debug_msg.str("");
+
+		debug_msg << "Normal: y =  " << this->line_normal.at<double>(1,0) << "x + " << this->line_normal.at<double>(0,0);
+		Debug(debug_msg.str());
+		debug_msg.clear(); debug_msg.str("");
+
+		debug_msg << "Tangent point: " << this->tangent_point << " [x, y]";
+		Debug(debug_msg.str());
+		debug_msg.clear(); debug_msg.str("");
+
+		debug_msg << "Robot point:   " << this->robot.coordinates << " [x, y]";
+		Debug(debug_msg.str());
+
+		Debug("Robot distance to center: " + to_string(this->robot.distance_to_center/10) + " cm");
 	}
 
     return dohyo;
