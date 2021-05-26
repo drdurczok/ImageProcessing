@@ -81,8 +81,8 @@ bool sumo_edge::calculate_ring_center(Mat image){
  *		The offset is calculated by raising the tangent untill no more pixels are found above it.
  */
 void sumo_edge::find_tangent(Mat img){
-	this->img_floor = this->getFloorPixels_Points(img);
-	this->img_ceil = this->getCeilingPixels_Points(img);
+	vector<Point2f> img_floor = this->getFloorPixels_Points(img);
+	vector<Point2f> img_ceil = this->getCeilingPixels_Points(img);
 
 	Debug("Calculating tangent slope.");
 	//Definition of both lines, y = ax + b
@@ -311,7 +311,7 @@ bool sumo_edge::calculate_threshold_image(Mat input, Mat & result){
 	}
 }
 
-/*______________________POST RENDER______________________*/
+/*______________________PREDICTIVE______________________*/
 /*
  *	Creates new image that only includes the Dohyo surface and thresholds.
  */
@@ -320,8 +320,12 @@ Mat sumo_edge::isolate_dohyo(Mat image){
 
 	uint avg_px_val = 140;
 
+
+
     if (this->success){
-		for (auto point : this->img_floor){
+    	vector<Point> img_floor = assume_dohyo_inner_ring (image);
+
+		for (auto point : img_floor){
 			for (uint y = image.size().height-1; y > point.y; y--){
 				isolated_frame.at<uint8_t>(y, point.x) = image.at<uint8_t>(y, point.x);
 			}
@@ -333,6 +337,28 @@ Mat sumo_edge::isolate_dohyo(Mat image){
 
 	return isolated_frame;
 }
+
+/*
+ *	(x - xc)^2 + (y - yc)^2 = r^2
+ */
+vector<Point> sumo_edge::assume_dohyo_inner_ring(Mat image){
+	vector<Point> ring_floor;
+	for (int x = 0; x < image.size().width; x++){	// y = yc - sqrt(r^2 - (x - xc)^2)
+		double y = this->circle_center.y - sqrt(pow(outer_ring_radius_pixels-20/this->pix_to_mm,2) - pow((x - this->circle_center.x),2));
+		ring_floor.push_back(Point(x, y));
+	}
+	return ring_floor;
+}
+
+vector<Point> sumo_edge::assume_dohyo_outer_ring(Mat image){
+	vector<Point> ring_ceil;
+	for (int x = 0; x < image.size().width; x++){	// y = yc - sqrt(r^2 - (x - xc)^2)
+		double y = this->circle_center.y - sqrt(pow(outer_ring_radius_pixels,2) - pow((x - this->circle_center.x),2));
+		ring_ceil.push_back(Point(x, y));
+	}
+	return ring_ceil;
+}
+
 
 
 /*______________________VISUAL___________________________*/

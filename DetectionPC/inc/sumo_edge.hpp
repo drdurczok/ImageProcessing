@@ -43,16 +43,17 @@ class sumo_edge : private image_processing {
     void find_normal();
     void find_circle_center();
 
-    /*______________________THRESHOLD________________________________*/
+    /*______________________THRESHOLD______________________________*/
     bool calculate_threshold_image(Mat, Mat &);
-
-    vector<Point2f> img_floor;
-    vector<Point2f> img_ceil;
 
     /*______________________ALGORITHMS_____________________________*/
     Mat TotalLeastSquares(vector<Point2f>);
     vector<Point> get_line_points(Mat, Mat);
     vector<Point> get_fov_line_points(Mat, Point2f, double);
+
+    /*______________________PREDICTIVE_____________________________*/
+    vector<Point> assume_dohyo_inner_ring(Mat);
+    vector<Point> assume_dohyo_outer_ring(Mat);
 
 };
 
