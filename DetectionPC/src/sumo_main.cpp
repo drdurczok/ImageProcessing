@@ -15,9 +15,9 @@ void sumo_main::run(Mat image){
 	Mat dohyo_img = edge_detection.isolate_dohyo(image);
 	opponent_detection.calculate_opponent_position(dohyo_img);
 
-	imshow("Dohyo isolated", dohyo_img);
+	//imshow("Dohyo isolated", dohyo_img);
 
-	debug(image);
+	//debug(image);
 }
 
 void sumo_main::debug(Mat image){

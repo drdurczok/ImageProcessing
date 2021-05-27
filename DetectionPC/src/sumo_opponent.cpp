@@ -19,7 +19,7 @@ void sumo_opponent::calculate_opponent_position(Mat image){
 
     Mat img_edge = this->find_edge(image, edge_filter_methods::SOBELY);
 
-    imshow("EDGE", img_edge);
+    //imshow("EDGE", img_edge);
 
     // Probabilistic Hough Line Transform
     /*

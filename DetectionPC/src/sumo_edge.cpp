@@ -246,7 +246,7 @@ bool sumo_edge::calculate_threshold_image(Mat input, Mat & result){
 	double delta_step_area = 0;
 	double delta_step_area_prev = 0;
 
-	int starting_thresh = 190;
+	int starting_thresh = 220;
 
 	Mat output;
 
@@ -271,7 +271,8 @@ bool sumo_edge::calculate_threshold_image(Mat input, Mat & result){
 		waitKey(0);
 		*/
 
-		if (contours.size() == 1){
+
+		if (this->is_arc(contours, output)){
 			area = contourArea(contours[0]);
 
 			if (area > max_area){break;}
@@ -311,6 +312,69 @@ bool sumo_edge::calculate_threshold_image(Mat input, Mat & result){
 	}
 }
 
+bool sumo_edge::is_arc(vector<vector<Point>> contours, Mat image ){
+	// Find the rotated rectangles for each contour
+    vector<RotatedRect> minRect(contours.size());
+    double length_1, length_2, sagitta, width;
+    double sagitta_1, sagitta_2;
+    double sagitta_delta_1, sagitta_delta_2;
+    double tolerance = 0.22 ;
+
+    uint found = 0;
+
+    for( int i = 0; i < contours.size(); i++ ){
+        minRect[i] = minAreaRect( Mat(contours[i]) );
+
+        // detect rectangle for each contour
+        Point2f rect_points[4]; minRect[i].points( rect_points );
+
+        length_1 = norm(Mat(rect_points[0]), Mat(rect_points[1]));
+        length_2 = norm(Mat(rect_points[1]), Mat(rect_points[2]));
+
+        if (length_1 > length_2){
+        	sagitta = length_2;
+        	width  = length_1;
+        }
+        else{
+        	sagitta = length_1;
+        	width  = length_2;
+        }
+
+        // sagitta - height of arc s = r +- sqrt(r^2 - l^2), where l is 1/2 the segment length
+        sagitta_1 = this->outer_ring_radius_pixels + sqrt(pow(this->outer_ring_radius_pixels,2) - pow(width/2,2));
+        sagitta_2 = this->outer_ring_radius_pixels - sqrt(pow(this->outer_ring_radius_pixels,2) - pow(width/2,2));
+
+        sagitta_delta_1 = abs(sagitta - sagitta_1)/width;
+        sagitta_delta_2 = abs(sagitta - sagitta_2)/width;
+
+
+    	/* Draw fitted rectangle
+    	Debug("Sagitta tolerance [% of width]: " + to_string(sagitta_delta_1) + " | " + to_string(sagitta_delta_2));
+    	Mat temp = image.clone();
+        minRect[i].points(rect_points);
+        for (int j = 0; j < 4; j++)
+        	line(temp, rect_points[j], rect_points[(j + 1) % 4], Scalar(255,0,0), 1, 8);
+        imshow("DRAW", temp);
+        waitKey(0);
+        */
+
+        if (sagitta_delta_1 < tolerance || sagitta_delta_2 < tolerance){
+        	found++;
+        }
+        else{
+        	return false;
+        }
+    }
+
+    if (found <= 2){
+    	return true;
+    }
+
+	//if (contours.size() == 1 || contours.size() == 2){return true;}
+
+	return false;
+}
+
 /*______________________PREDICTIVE______________________*/
 /*
  *	Creates new image that only includes the Dohyo surface and thresholds.
@@ -319,8 +383,6 @@ Mat sumo_edge::isolate_dohyo(Mat image){
 	Mat isolated_frame = Mat::zeros(image.size().height, image.size().width, CV_8U);
 
 	uint avg_px_val = 140;
-
-
 
     if (this->success){
     	vector<Point> img_floor = assume_dohyo_inner_ring (image);
