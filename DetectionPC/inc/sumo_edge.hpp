@@ -50,7 +50,7 @@ class sumo_edge : private image_processing {
     Mat TotalLeastSquares(vector<Point2f>);
     vector<Point> get_line_points(Mat, Mat);
     vector<Point> get_fov_line_points(Mat, Point2f, double);
-    bool is_arc(vector<vector<Point>>, Mat);
+    bool check_sagitta_condition(vector<vector<Point>>, vector<vector<Point>> * );
 
     /*______________________PREDICTIVE_____________________________*/
     vector<Point> assume_dohyo_inner_ring(Mat);

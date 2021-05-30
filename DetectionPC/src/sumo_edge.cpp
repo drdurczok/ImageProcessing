@@ -233,22 +233,26 @@ vector<Point> sumo_edge::get_fov_line_points(Mat image, Point2f point, double an
 bool sumo_edge::calculate_threshold_image(Mat input, Mat & result){
 	uint min_threshold;
 	uint max_threshold = 255;
+	uint starting_thresh = 220;
 
 	Mat kernel_close = getStructuringElement(MORPH_RECT, Size(3,3));
 	Mat kernel_open  = getStructuringElement(MORPH_RECT, Size(5,5));
 
 	vector<vector<Point>> contours;
-	double area;
+	vector<vector<Point>> contours_isolated;
+
+	Mat output;
+
+	// Area condition
+	bool found_edge = false;
+	bool area_condition = true;
+
 	double area_prev = 999999;
 	double min_area = 4000;
 	double max_area = 20000;
 	double max_step_area = 10000;
 	double delta_step_area = 0;
 	double delta_step_area_prev = 0;
-
-	int starting_thresh = 220;
-
-	Mat output;
 
 	int step = 15;
 	for (int min_threshold = starting_thresh; min_threshold > 0 ; min_threshold -= step){
@@ -271,58 +275,72 @@ bool sumo_edge::calculate_threshold_image(Mat input, Mat & result){
 		waitKey(0);
 		*/
 
+		if (this->check_sagitta_condition(contours, &contours_isolated)){
+			for ( auto contour : contours_isolated ){
+				double area = contourArea(contour);
 
-		if (this->is_arc(contours, output)){
-			area = contourArea(contours[0]);
+				if (area > max_area){
+					area_condition = false;
+					break;
+				}
+				if (area > min_area){
+					if (area - area_prev > max_step_area){
+						area_condition = false;
+						break;
+					}
+				}
 
-			if (area > max_area){break;}
-			if (area > min_area){
-				if (area - area_prev > max_step_area){break;}
+				if (delta_step_area > 0){
+					delta_step_area = area - area_prev;
+					if (delta_step_area > delta_step_area_prev){
+						area_condition = false;
+						break;
+					}
+				}
+				else{
+					delta_step_area = area;
+				}
+
+				area_prev = area;
+				delta_step_area_prev = delta_step_area;
+
+				found_edge = true;
 			}
-
-			if (delta_step_area > 0){
-				delta_step_area = area - area_prev;
-				if (delta_step_area > delta_step_area_prev){break;}
-			}
-			else{
-				delta_step_area = area;
-			}
-
-			area_prev = area;
-			delta_step_area_prev = delta_step_area;
-		}
-		else if (min_threshold == starting_thresh){
-			return false;
 		}
 		else{
 			break;
 		}
 
-		result = output.clone();
+		if (!area_condition){
+			break;
+		}
 	}
 
-	if(area_prev < 999999){
-		Debug("Min threshold: " + to_string(min_threshold));
-		Debug("Area:          " + to_string(area_prev));
+	if (found_edge){
+		Mat blank_frame = Mat::zeros(input.size().height, input.size().width, CV_8U);
+		drawContours(blank_frame, contours_isolated, -1, Scalar(255), 1);
+		result = blank_frame;
+
 		return true;
 	}
 	else{
-		CWARN("Found no contours");
 		return false;
 	}
 }
 
-bool sumo_edge::is_arc(vector<vector<Point>> contours, Mat image ){
+bool sumo_edge::check_sagitta_condition(vector<vector<Point>> contours, vector<vector<Point>> * contours_isolated){
 	// Find the rotated rectangles for each contour
     vector<RotatedRect> minRect(contours.size());
     double length_1, length_2, sagitta, width;
     double sagitta_1, sagitta_2;
     double sagitta_delta_1, sagitta_delta_2;
-    double tolerance = 0.22 ;
+    double center_y = 0;
+    double tolerance = 0.22;
+    double contour_height = 0;
 
     uint found = 0;
 
-    for( int i = 0; i < contours.size(); i++ ){
+    for( uint i = 0; i < contours.size(); i++ ){
         minRect[i] = minAreaRect( Mat(contours[i]) );
 
         // detect rectangle for each contour
@@ -330,6 +348,7 @@ bool sumo_edge::is_arc(vector<vector<Point>> contours, Mat image ){
 
         length_1 = norm(Mat(rect_points[0]), Mat(rect_points[1]));
         length_2 = norm(Mat(rect_points[1]), Mat(rect_points[2]));
+
 
         if (length_1 > length_2){
         	sagitta = length_2;
@@ -339,6 +358,14 @@ bool sumo_edge::is_arc(vector<vector<Point>> contours, Mat image ){
         	sagitta = length_1;
         	width  = length_2;
         }
+
+        double y_max = 0; 
+        double y_min = 999;
+        for (auto p : rect_points){
+        	if (p.y > y_max) y_max = p.y;
+        	if (p.y < y_min) y_min = p.y;
+        }
+        center_y = (y_max + y_min)/2;
 
         // sagitta - height of arc s = r +- sqrt(r^2 - l^2), where l is 1/2 the segment length
         sagitta_1 = this->outer_ring_radius_pixels + sqrt(pow(this->outer_ring_radius_pixels,2) - pow(width/2,2));
@@ -357,9 +384,15 @@ bool sumo_edge::is_arc(vector<vector<Point>> contours, Mat image ){
         imshow("DRAW", temp);
         waitKey(0);
         */
-
+        
         if (sagitta_delta_1 < tolerance || sagitta_delta_2 < tolerance){
         	found++;
+
+        	if (contour_height < center_y){
+        		contour_height = center_y;
+        		contours_isolated->clear();
+        		contours_isolated->push_back(contours[i]);
+        	}
         }
         else{
         	return false;
@@ -370,10 +403,9 @@ bool sumo_edge::is_arc(vector<vector<Point>> contours, Mat image ){
     	return true;
     }
 
-	//if (contours.size() == 1 || contours.size() == 2){return true;}
-
-	return false;
+    return false;
 }
+
 
 /*______________________PREDICTIVE______________________*/
 /*
