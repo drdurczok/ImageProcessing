@@ -81,8 +81,10 @@ void image_capture(){
 }
 
 void benchmark(){
+	// Take first image and give time for hardware to initialize
 	image_capture();
 	for (int j = 0; j<1000000; j++){}
+
 	auto t_start  = high_resolution_clock::now();
 	auto t_end  = high_resolution_clock::now();
 	duration<double, std::milli> ms_double[num_of_runs];

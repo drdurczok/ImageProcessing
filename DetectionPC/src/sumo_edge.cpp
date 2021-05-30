@@ -166,46 +166,6 @@ void sumo_edge::find_circle_center(){
 
 /*______________________ALGORITHMS_____________________________*/
 
-Mat sumo_edge::TotalLeastSquares(vector<Point2f> points) {
-	//Build A matrix 
-	int N = 2;
-	Mat A = Mat::zeros(N, N, CV_64FC1);
- 
-	for (int row = 0; row < A.rows; row++){
-		for (int col = 0; col < A.cols; col++){
-			for (int k = 0; k < points.size(); k++){
-				A.at<double>(row, col) = A.at<double>(row, col) + pow(points[k].x, row + col);
-			}
-		}
-	}
-	 //Build B matrix
-	Mat B = Mat::zeros(N, 1, CV_64FC1);
-	for (int row = 0; row < B.rows; row++){
-		for (int k = 0; k < points.size(); k++){
-			B.at<double>(row, 0) = B.at<double>(row, 0) + pow(points[k].x, row)*points[k].y;
-		}
-	}
-
-	//A*X=B
-	Mat X;
-	solve(A, B, X, DECOMP_LU);
-
-	//cout << "y = b + ax" << endl;
-	//cout << "y = " << X.at<double>(0, 0) << " + " << X.at<double>(1, 0) << " x" << endl;
-
-	return X;
-}
-
-vector<Point> sumo_edge::get_line_points(Mat image, Mat X){
-	vector<Point>lines;
-	for (int x = 0; x < image.size().width; x++){				// y = b + ax;
-		double y = X.at<double>(0, 0) + X.at<double>(1, 0)*x;
-		lines.push_back(Point(x, y));
-	}
-
-    return lines;
-}
-
 vector<Point> sumo_edge::get_fov_line_points(Mat image, Point2f point, double angle){
 	Mat line = Mat::zeros(2, 2, CV_64F);
 	line.at<double>(1,0) = tan(angle);
@@ -417,7 +377,7 @@ Mat sumo_edge::isolate_dohyo(Mat image){
 	uint avg_px_val = 140;
 
     if (this->success){
-    	vector<Point> img_floor = assume_dohyo_inner_ring (image);
+    	vector<Point> img_floor = assume_dohyo_inner_ring(image);
 
 		for (auto point : img_floor){
 			for (uint y = image.size().height-1; y > point.y; y--){
@@ -425,8 +385,10 @@ Mat sumo_edge::isolate_dohyo(Mat image){
 			}
 		}
 
-		threshold(isolated_frame, isolated_frame, avg_px_val, 255, THRESH_BINARY);
-
+		//threshold(isolated_frame, isolated_frame, avg_px_val, 255, THRESH_BINARY);
+	}
+	else{
+		isolated_frame = image;
 	}
 
 	return isolated_frame;

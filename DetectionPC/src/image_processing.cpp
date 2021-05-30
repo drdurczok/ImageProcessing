@@ -325,3 +325,45 @@ Mat image_processing::draw_point_on_frame(Mat frame, Point2f pixel){
 double image_processing::get_pix_to_mm(){
 	return this->pix_to_mm;
 }
+
+/*______________________ALGORITHMS_____________________________*/
+
+Mat image_processing::TotalLeastSquares(vector<Point2f> points) {
+	//Build A matrix 
+	int N = 2;
+	Mat A = Mat::zeros(N, N, CV_64FC1);
+ 
+	for (int row = 0; row < A.rows; row++){
+		for (int col = 0; col < A.cols; col++){
+			for (int k = 0; k < points.size(); k++){
+				A.at<double>(row, col) = A.at<double>(row, col) + pow(points[k].x, row + col);
+			}
+		}
+	}
+	 //Build B matrix
+	Mat B = Mat::zeros(N, 1, CV_64FC1);
+	for (int row = 0; row < B.rows; row++){
+		for (int k = 0; k < points.size(); k++){
+			B.at<double>(row, 0) = B.at<double>(row, 0) + pow(points[k].x, row)*points[k].y;
+		}
+	}
+
+	//A*X=B
+	Mat X;
+	solve(A, B, X, DECOMP_LU);
+
+	//cout << "y = b + ax" << endl;
+	//cout << "y = " << X.at<double>(0, 0) << " + " << X.at<double>(1, 0) << " x" << endl;
+
+	return X;
+}
+
+vector<Point> image_processing::get_line_points(Mat image, Mat X){
+	vector<Point>lines;
+	for (int x = 0; x < image.size().width; x++){				// y = b + ax;
+		double y = X.at<double>(0, 0) + X.at<double>(1, 0)*x;
+		lines.push_back(Point(x, y));
+	}
+
+    return lines;
+}

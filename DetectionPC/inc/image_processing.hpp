@@ -85,6 +85,10 @@ class image_processing {
     Point2f camera_coordinates;
     double pix_to_mm;
 
+    /*______________________ALGORITHMS_______________________________*/
+    Mat TotalLeastSquares(vector<Point2f>);
+    vector<Point> get_line_points(Mat, Mat);
+
 };
 
 #endif

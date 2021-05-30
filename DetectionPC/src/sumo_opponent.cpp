@@ -11,50 +11,119 @@ Point2f sumo_opponent::find_opponent_position(Mat image){
 void sumo_opponent::calculate_opponent_position(Mat image){
 	bool success = false;
 
-    //imshow("0", image);
+    vector<Vec4i> lines;
+    const int threshold = 50;
+    const double minLineLength = 10;
+    const double maxLineGap = 20;
+    HoughLinesP( image, lines, 1, CV_PI/180, threshold, minLineLength, maxLineGap );
 
-    // Copy edges to the images that will display the results in BGR
-    //Mat image_copy;
-    //cvtColor(image, image_copy, COLOR_GRAY2BGR);
-
-    Mat img_edge = this->find_edge(image, edge_filter_methods::SOBELY);
-
-    //imshow("EDGE", img_edge);
-
-    // Probabilistic Hough Line Transform
-    /*
-    vector<Vec4i> lines; 										// will hold the results of the detection
-    HoughLinesP(img_edge, lines, 1, CV_PI/180, 50, 50, 10 ); 	// runs the actual detection
-
-    // Filter lines
-    vector<Vec4i> lines_filtered;
-    Vec4i l;
-    double len;
-
+    /* Draw Lines
+    Mat lines_frame = Mat::zeros(image.size().height, image.size().width, CV_8U);
     for( size_t i = 0; i < lines.size(); i++ ){
-    	l = lines[i];
-        len = sqrt((l[0] - l[2])^2 + (l[1] - l[3])^2);
+        line( lines_frame, Point(lines[i][0], lines[i][1]), Point( lines[i][2], lines[i][3]), Scalar(255), 1, 1 );
+    }
+    imshow("Lines", lines_frame);
+    */
 
-        if (len > 0){
-        	lines_filtered.push_back(lines[i]);
-        	//cout << "Line length: " << len << endl;
+    vector<double> slopes;
+    for ( auto line : lines){
+        slopes.push_back(this->calculate_slope(Point2f(line[0],line[1]), Point2f(line[2],line[3])));
+    }
+
+    double slope_inv;
+    double tolerance_dist  = 20;            //Pixels
+    double tolerance_angle = 20 * PI/180;   //Degrees
+    for( size_t i = 0; i < lines.size(); i++ ){
+        for( size_t j = i; j < lines.size(); ++j ){
+            // Check if lines intersect
+            if ( this->calculate_dist(Point2f(lines[i][0],lines[i][1]),Point2f(lines[j][0],lines[j][1])) < tolerance_dist ||
+                 this->calculate_dist(Point2f(lines[i][0],lines[i][1]),Point2f(lines[j][2],lines[j][3])) < tolerance_dist ||
+                 this->calculate_dist(Point2f(lines[i][2],lines[i][3]),Point2f(lines[j][2],lines[j][3])) < tolerance_dist )
+            {
+                // Check if slopes are at right angles
+                if (abs(this->calculate_angle(slopes[i],slopes[j]) - PI/2) < tolerance_angle) {
+                    this->opponent_edge.clear();
+                    this->opponent_edge.push_back(lines[i]);
+                    this->opponent_edge.push_back(lines[j]);
+                    
+                    this->robot.coordinates = this->calculate_intersection(
+                                Point2f(opponent_edge[0][0],opponent_edge[0][1]),
+                                Point2f(opponent_edge[0][2],opponent_edge[0][3]),
+                                Point2f(opponent_edge[1][0],opponent_edge[1][1]),
+                                Point2f(opponent_edge[1][2],opponent_edge[1][3]));
+                    success = true;
+                    
+                    /* Draw result lines
+                    Mat output = Mat::zeros(image.size().height, image.size().width, CV_8U);
+                    line( output, Point(lines[i][0], lines[i][1]), Point( lines[i][2], lines[i][3]), Scalar(255), 1, 1 );
+                    line( output, Point(lines[j][0], lines[j][1]), Point( lines[j][2], lines[j][3]), Scalar(255), 1, 1 );
+                    imshow("Lines Intersection", output);
+                    waitKey(0);
+                    */                    
+
+                    break;
+                } 
+            }   
         }
-    }*/
+    }
 
-	// Draw the lines
-    //for( size_t i = 0; i < lines_filtered.size(); i++ ){
-    //    l = lines[i];
-    //    line( image_copy, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 1, LINE_AA);
-    //}
 
-    //cout << "Lines detected: " << lines_filtered.size() << endl;
-    //imshow("1", img_edge);
-    //imshow("2", image_copy);
 
     if (success){
-    	cout << "INFO: Locating opponent" << endl;
+    	Debug("Opponent found.");
     }
     else{
-		//cout << "WARNING: Threshold not found for image." << endl;
+		CWARN("Threshold not found for image.");
 	}
+}
+
+Mat sumo_opponent::floor_pixels(Mat input){
+    cvtColor(input, input, COLOR_RGB2GRAY);
+
+    const int max_lowThreshold = 150;
+    const int ratio = 3;
+    const int kernel_size = 3;
+    Canny( input, input, max_lowThreshold, max_lowThreshold*ratio, kernel_size );
+
+    vector<Point2f> floor_pixels = this->getFloorPixels_Points(input);
+
+    Mat output = Mat::zeros(input.size().height, input.size().width, CV_8U);
+
+    for ( auto pixel : floor_pixels ){
+        output.at<uint8_t>(pixel) = 255;
+    }
+
+    return output;
+}
+
+double sumo_opponent::calculate_slope(Point2f p_1, Point2f p_2){
+    if ((p_1.x - p_2.x) != 0){
+        return (p_1.y - p_2.y)/(p_1.x - p_2.x);
+    }
+
+    return 0;
+}
+
+double sumo_opponent::calculate_dist(Point2f p_1, Point2f p_2){
+    return sqrt(pow((p_1.y - p_2.y),2)+pow((p_1.x - p_2.x),2));
+}
+
+double sumo_opponent::calculate_angle(double slope_1, double slope_2){
+    return atan((slope_1 - slope_2)/(1 + slope_1*slope_2));
+}
+
+Point2f sumo_opponent::calculate_intersection(Point2f p_1, Point2f p_2, Point2f p_3, Point2f p_4){
+    double a1, b1, c1, a2, b2, c2;
+    a1 = this->calculate_slope(p_1, p_2);
+    a2 = this->calculate_slope(p_3, p_4);
+    b1 = -1;
+    b2 = -1;
+    c1 = p_1.y - a1*p_1.x;
+    c2 = p_3.y - a2*p_3.x;
+
+    double x, y;
+    x = (b1*c2 - b2*c1)/(a1*b2 - a2*b1);
+    y = (c1*a2 - c2*a1)/(a1*b2 - a2*b1);
+
+    return Point2f(x,y);
 }
