@@ -32,6 +32,7 @@ class image_processing {
 
     /*______________________HOMOGRAPHY_______________________________*/
     Point2f homography_calc(Point2f);
+    Point2f homography_calc_inverse(Point2f );
     Mat get_homography_frame(Mat);
     Mat get_homography_frame_from_map(Mat );
     Mat get_homography_origin_frame(Mat);

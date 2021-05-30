@@ -15,12 +15,15 @@ class sumo_edge : private image_processing {
 
     void calculate_robot_position();
     bool calculate_ring_center(Mat);
+    Point2f calculate_opponent_position(Point2f);
 
     Mat isolate_dohyo(Mat);
 
 	Mat draw_homography_frame(Mat);
     Mat draw_dohyo();
+    Mat draw_dohyo_opponent(Mat, Point2f, double);
     Mat draw_lines(Mat);
+    Mat draw_lines_opponent(Mat, Point2f, double);
 
   private:
     struct position {

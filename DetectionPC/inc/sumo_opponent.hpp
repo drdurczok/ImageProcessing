@@ -17,11 +17,20 @@ class sumo_opponent : private image_processing {
 	void calculate_opponent_position(Mat);
 	Mat floor_pixels(Mat);
 
+	Point2f get_coordinates();
+	double  get_front_slope();
+	bool is_opponent_found();
+
   private:
   	struct position {
-      Point2f coordinates;
-      vector<Vec4i> opponent_edge;
+      Point2f coordinates;			// With respect to position of self
+      double front_slope;
+      double length;				// Robot length in mm
 	} robot;
+
+	bool success;
+
+    vector<Vec4i> opponent_edge;
 
   	double calculate_slope(Point2f, Point2f);
   	double calculate_dist(Point2f, Point2f);

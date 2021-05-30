@@ -1,6 +1,8 @@
 #include "../inc/sumo_opponent.hpp"
 
-sumo_opponent::sumo_opponent(){}
+sumo_opponent::sumo_opponent(){
+    this->robot.length = 20;
+}
 
 Point2f sumo_opponent::find_opponent_position(Mat image){
 	this->calculate_opponent_position(image);
@@ -9,7 +11,7 @@ Point2f sumo_opponent::find_opponent_position(Mat image){
 }
 
 void sumo_opponent::calculate_opponent_position(Mat image){
-	bool success = false;
+	this->success = false;
 
     vector<Vec4i> lines;
     const int threshold = 50;
@@ -42,6 +44,8 @@ void sumo_opponent::calculate_opponent_position(Mat image){
             {
                 // Check if slopes are at right angles
                 if (abs(this->calculate_angle(slopes[i],slopes[j]) - PI/2) < tolerance_angle) {
+                    Point2f pos_of_self = this->get_camera_coordinates();
+
                     this->opponent_edge.clear();
                     this->opponent_edge.push_back(lines[i]);
                     this->opponent_edge.push_back(lines[j]);
@@ -51,7 +55,9 @@ void sumo_opponent::calculate_opponent_position(Mat image){
                                 Point2f(opponent_edge[0][2],opponent_edge[0][3]),
                                 Point2f(opponent_edge[1][0],opponent_edge[1][1]),
                                 Point2f(opponent_edge[1][2],opponent_edge[1][3]));
-                    success = true;
+                    this->robot.front_slope  = slopes[i];
+
+                    this->success = true;
                     
                     /* Draw result lines
                     Mat output = Mat::zeros(image.size().height, image.size().width, CV_8U);
@@ -69,12 +75,24 @@ void sumo_opponent::calculate_opponent_position(Mat image){
 
 
 
-    if (success){
+    if (this->success){
     	Debug("Opponent found.");
     }
     else{
 		CWARN("Threshold not found for image.");
 	}
+}
+
+Point2f sumo_opponent::get_coordinates(){
+    return this->robot.coordinates;
+}
+
+double sumo_opponent::get_front_slope(){
+    return this->robot.front_slope;
+}
+
+bool sumo_opponent::is_opponent_found(){
+    return this->success;
 }
 
 Mat sumo_opponent::floor_pixels(Mat input){

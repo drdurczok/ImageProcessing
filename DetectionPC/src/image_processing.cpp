@@ -248,6 +248,25 @@ Point2f image_processing::homography_calc(Point2f pixel){
     return Point2f(HPoint.at<double>(0), HPoint.at<double>(1));
 }
 
+Point2f image_processing::homography_calc_inverse(Point2f pixel){
+    /*
+     * Convert point in homography coordinates to image frame.
+     *  1 pixel = 1 mm
+     */
+    //Convert to Mat
+    double point_coord[] = {pixel.x, pixel.y, 1};
+    Mat CPoint = Mat(3, 1, CV_64F, point_coord);
+
+    //Calculate point in homography frame of reference
+    Mat HPoint = this->homographyMatrix * CPoint;
+
+    //Noramlize the point
+    HPoint =  HPoint / HPoint.at<double>(2);
+
+    //Convert back to Point2f
+    return Point2f(HPoint.at<double>(0), HPoint.at<double>(1));
+}
+
 Mat image_processing::get_homography_frame(Mat frame){
 	Mat homography_frame;
 

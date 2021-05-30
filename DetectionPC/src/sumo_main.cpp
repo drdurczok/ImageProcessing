@@ -19,28 +19,35 @@ void sumo_main::run(Mat image){
 	// Opponent detection
 	Point2f opponent_position;
 
-	//Mat image_inv, image_gray_inv;
-	//bitwise_not(image, image_inv);	// Invert Image
-	//this->prepare_image(image_inv, image_gray_inv);
-
-
 	Mat frame;
 	frame = opponent_detection.floor_pixels(image);
 	frame = this->get_homography_frame(frame);
 	frame = edge_detection.isolate_dohyo(frame);
 
 	opponent_detection.calculate_opponent_position(frame);
+	Point2f opp_coord = opponent_detection.get_coordinates();
+	opponent_position = edge_detection.calculate_opponent_position(opp_coord);
 
-
-	//imshow("Dohyo isolated", dohyo_img);
+	//imshow("Dohyo isolated", frame);
 	//debug(image);
 }
 
 void sumo_main::debug(Mat image){
-	imshow("Lines", edge_detection.draw_lines(image));
+	Mat lines = edge_detection.draw_lines(image);
+	Mat dohyo = edge_detection.draw_dohyo();
 
 	namedWindow("Dohyo", cv::WINDOW_FREERATIO);
-	imshow("Dohyo", edge_detection.draw_dohyo());
+
+	if (opponent_detection.is_opponent_found()){
+		Point2f opp  = opponent_detection.get_coordinates();
+		double slope = opponent_detection.get_front_slope();
+
+		lines = edge_detection.draw_lines_opponent(lines, opp, slope);
+		dohyo = edge_detection.draw_dohyo_opponent(dohyo, opp, slope);
+	}
+
+	imshow("Lines", lines);
+	imshow("Dohyo", dohyo);
 	resizeWindow("Dohyo", 500, 500);
 	waitKey(0);
 }

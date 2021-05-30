@@ -46,6 +46,21 @@ void sumo_edge::calculate_robot_position(){
     robot.coordinates = robot_point;
 }
 
+Point2f sumo_edge::calculate_opponent_position(Point2f coord){
+    //Find robot as a point
+    Debug("Calculating opponent position.");
+
+    // Translate to Dohyo by computing the difference between real Dohyo center and acquired
+    int cent_x = this->outer_ring_radius_pixels - this->circle_center.x;
+    int cent_y = this->outer_ring_radius_pixels - this->circle_center.y;
+
+    Point2f opponent_point = Point2f(
+    	cent_x + coord.x ,
+    	cent_y + coord.y);
+
+    //opponent.coordinates = opponent_point;
+    return opponent_point;
+}
 
 /*______________________DOHYO CENTER___________________________*/
 
@@ -480,6 +495,49 @@ Mat sumo_edge::draw_dohyo(){
     return dohyo;
 }
 
+Mat sumo_edge::draw_dohyo_opponent(Mat input, Point2f coord, double slope){    
+    Mat output = input.clone();
+
+    if (this->success){
+	    Point2f opponent_point = this->calculate_opponent_position(coord);
+
+		Point2f corner[4];
+
+		corner[0] = opponent_point;
+		//circle(output, opponent_point, 20, (0, 0, 255), -1);
+
+	    double side_length_px = 100 / pix_to_mm;
+
+		double b = opponent_point.y - slope * opponent_point.x;
+	    double x = opponent_point.x + side_length_px / sqrt(1 + pow(slope,2));
+	    double y = x * slope + b;
+
+	    corner[1] = Point(x,y);
+	    //circle(frame, Point(x,y), 20, (0, 0, 255), -1);
+
+	    slope = -1/slope;
+	    b = opponent_point.y - slope * opponent_point.x;
+		x = opponent_point.x - side_length_px / sqrt(1 + pow(slope,2));
+	    y = x * slope + b;
+
+	    corner[2] = Point(x,y);
+	    //circle(frame, Point(x,y), 20, (0, 0, 255), -1);
+
+	    x = (corner[1].x - corner[0].x) + corner[2].x;
+	    y = (corner[1].y - corner[0].y) + corner[2].y;
+
+	    corner[3] = Point(x,y);
+	    //circle(frame, Point(x,y), 20, (0, 0, 255), -1);
+
+	    line( output, corner[0], corner[1], Scalar(255), 5, 1 );
+	    line( output, corner[0], corner[2], Scalar(255), 5, 1 );
+	    line( output, corner[3], corner[1], Scalar(255), 5, 1 );
+	    line( output, corner[3], corner[2], Scalar(255), 5, 1 );
+    }
+
+    return output;
+}
+
 Mat sumo_edge::draw_lines(Mat frame){
 	if (this->success){
 		vector<Point> line_tangent_points = this->get_line_points(frame, this->line_tangent);
@@ -490,6 +548,35 @@ Mat sumo_edge::draw_lines(Mat frame){
 
 	    circle(frame, this->tangent_point, 5, (0, 0, 255), -1);
 	}
+
+	return frame;
+}
+
+Mat sumo_edge::draw_lines_opponent(Mat frame, Point2f coord, double slope){
+	Point2f corner[4];
+
+	corner[0] = this->homography_calc_inverse(coord);
+	//circle(frame, this->homography_calc_inverse(coord), 5, (0, 0, 255), -1);
+
+    double side_length_px = 100 / pix_to_mm;
+
+	double b = coord.y - slope * coord.x;
+    double x = coord.x + side_length_px / sqrt(1 + pow(slope,2));
+    double y = x * slope + b;
+
+    corner[1] = this->homography_calc_inverse(Point(x,y));
+    //circle(frame, this->homography_calc_inverse(Point(x,y)), 5, (0, 0, 255), -1);
+
+    slope = -1/slope;
+    b = coord.y - slope * coord.x;
+	x = coord.x - side_length_px / sqrt(1 + pow(slope,2));
+    y = x * slope + b;
+
+    corner[2] = this->homography_calc_inverse(Point(x,y));
+    //circle(frame, this->homography_calc_inverse(Point(x,y)), 5, (0, 0, 255), -1);
+
+    line( frame, corner[0], corner[1], Scalar(255), 2, 1 );
+    line( frame, corner[0], corner[2], Scalar(255), 2, 1 );
 
 	return frame;
 }
