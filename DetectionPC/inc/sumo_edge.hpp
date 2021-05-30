@@ -15,15 +15,16 @@ class sumo_edge : private image_processing {
 
     void calculate_robot_position();
     bool calculate_ring_center(Mat);
-    Point2f calculate_opponent_position(Point2f);
+    Point2f translate_opponent_position(Point2f);
 
     Mat isolate_dohyo(Mat);
 
 	Mat draw_homography_frame(Mat);
-    Mat draw_dohyo();
-    Mat draw_dohyo_opponent(Mat, Point2f, double);
-    Mat draw_lines(Mat);
-    Mat draw_lines_opponent(Mat, Point2f, double);
+
+    double get_robot_distance_to_center();
+    Point get_tangent_point();
+    Mat get_line_tangent();
+    Mat get_line_normal();
 
   private:
     struct position {
@@ -50,7 +51,6 @@ class sumo_edge : private image_processing {
     bool calculate_threshold_image(Mat, Mat &);
 
     /*______________________ALGORITHMS_____________________________*/
-    vector<Point> get_fov_line_points(Mat, Point2f, double);
     bool check_sagitta_condition(vector<vector<Point>>, vector<vector<Point>> * );
 
     /*______________________PREDICTIVE_____________________________*/

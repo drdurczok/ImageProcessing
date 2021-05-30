@@ -12,12 +12,12 @@ class sumo_opponent : private image_processing {
   public:
     sumo_opponent();
 
-	Point2f find_opponent_position(Mat);
+	bool find_opponent_position(Mat);
 
-	void calculate_opponent_position(Mat);
+	bool calculate_opponent_position(Mat);
 	Mat floor_pixels(Mat);
 
-	Point2f get_coordinates();
+	Point2f get_opponent_position();
 	double  get_front_slope();
 	bool is_opponent_found();
 

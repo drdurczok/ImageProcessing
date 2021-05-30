@@ -19,7 +19,20 @@ class sumo_main : private image_processing {
 	sumo_edge     	 edge_detection;
 	sumo_opponent 	 opponent_detection;
 
+	bool robot_success;
+	bool opponent_success;
+
+	Point2f robot_position;
+	Point2f opponent_position;
+
+	/*______________________VISUAL___________________________*/
 	void debug(Mat);
+	Mat draw_dohyo();
+    Mat draw_dohyo_opponent(Mat, Point2f, double);
+    Mat draw_lines(Mat);
+    Mat draw_lines_opponent(Mat, Point2f, double);
+
+    vector<Point> get_fov_line_points(Mat, Point2f, double);
 };
 
 #endif

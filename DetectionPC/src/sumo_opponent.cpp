@@ -4,13 +4,13 @@ sumo_opponent::sumo_opponent(){
     this->robot.length = 20;
 }
 
-Point2f sumo_opponent::find_opponent_position(Mat image){
-	this->calculate_opponent_position(image);
+bool sumo_opponent::find_opponent_position(Mat image){
+	bool success = this->calculate_opponent_position(image);
 
-	return Point2f(0,0);
+	return success;
 }
 
-void sumo_opponent::calculate_opponent_position(Mat image){
+bool sumo_opponent::calculate_opponent_position(Mat image){
 	this->success = false;
 
     vector<Vec4i> lines;
@@ -77,13 +77,16 @@ void sumo_opponent::calculate_opponent_position(Mat image){
 
     if (this->success){
     	Debug("Opponent found.");
+        return true;
     }
     else{
 		CWARN("Threshold not found for image.");
 	}
+
+    return false;
 }
 
-Point2f sumo_opponent::get_coordinates(){
+Point2f sumo_opponent::get_opponent_position(){
     return this->robot.coordinates;
 }
 

@@ -23,10 +23,25 @@ bool sumo_edge::find_robot_position(Mat image){
 	return this->success;
 }
 
+double sumo_edge::get_robot_distance_to_center(){
+	return robot.distance_to_center;
+}
+
 Point2f sumo_edge::get_robot_position(){
 	return robot.coordinates;
 }
 
+Point sumo_edge::get_tangent_point(){
+	return this->tangent_point;
+}
+
+Mat sumo_edge::get_line_tangent(){
+	return this->line_tangent;
+}
+
+Mat sumo_edge::get_line_normal(){
+	return this->line_normal;
+}
 
 /*_________________________ROBOT______________________________*/
 
@@ -46,7 +61,7 @@ void sumo_edge::calculate_robot_position(){
     robot.coordinates = robot_point;
 }
 
-Point2f sumo_edge::calculate_opponent_position(Point2f coord){
+Point2f sumo_edge::translate_opponent_position(Point2f coord){
     //Find robot as a point
     Debug("Calculating opponent position.");
 
@@ -181,27 +196,7 @@ void sumo_edge::find_circle_center(){
 
 /*______________________ALGORITHMS_____________________________*/
 
-vector<Point> sumo_edge::get_fov_line_points(Mat image, Point2f point, double angle){
-	Mat line = Mat::zeros(2, 2, CV_64F);
-	line.at<double>(1,0) = tan(angle);
-	line.at<double>(0,0) = point.y - line.at<double>(1,0) * point.x;
 
-	vector<Point> line_points;
-	if (line.at<double>(1,0) < 0){
-		for (int x = point.x; x < image.size().width; x++){	// y = b + ax;
-			double y = line.at<double>(0, 0) + line.at<double>(1, 0)*x;
-			line_points.push_back(Point(x, y));
-		}
-	}
-	else{
-		for (int x = point.x; x > 0; x--){					// y = b + ax;
-			double y = line.at<double>(0, 0) + line.at<double>(1, 0)*x;
-			line_points.push_back(Point(x, y));
-		}
-	}
-
-	return line_points;
-}
 
 /*______________________THRESHOLD___________________________*/
 
@@ -445,138 +440,4 @@ Mat sumo_edge::draw_homography_frame(Mat image){
 	polylines(HFrame, line_normal_points, false, Scalar(255, 0, 0), 2, 8);
 
 	return HFrame;
-}
-
-Mat sumo_edge::draw_dohyo(){
-	string path_to_image = "../calibration/Dohyo.jpg";
-    Mat dohyo = imread(path_to_image, IMREAD_COLOR);
-
-    if (this->success){
-	    this->calculate_robot_position();
-
-	    circle(dohyo, robot.coordinates, 20, (0, 0, 255), -1);
-		//namedWindow("dohyo", WINDOW_FREERATIO);	
-	    //imshow("dohyo", dohyo);
-	    //waitKey(0);
-
-	    //cout << "Circle center:            " << this->circle_center << endl;
-	    //cout << "Robot Point:              " << robot.coordinates   << endl;	
-
-		//Draw viewing angle lines
-		double viewing_angle = 72 * PI/180; //deg to rad
-		double view_ang_1 = PI/2 + viewing_angle/2;
-		double view_ang_2 = PI/2 - viewing_angle/2;
-
-		vector<Point> line_view_1_points = this->get_fov_line_points(dohyo, robot.coordinates, view_ang_1);
-		polylines(dohyo, line_view_1_points, false, Scalar(255, 0, 0), 2, 8);
-
-		vector<Point> line_view_2_points = this->get_fov_line_points(dohyo, robot.coordinates, view_ang_2);
-		polylines(dohyo, line_view_2_points, false, Scalar(255, 0, 0), 2, 8);
-
-		ostringstream debug_msg;
-		debug_msg << "Tangent: y = " << line_tangent.at<double>(1,0) <<  "x + " << line_tangent.at<double>(0,0);
-		Debug(debug_msg.str());
-		debug_msg.clear(); debug_msg.str("");
-
-		debug_msg << "Normal: y =  " << this->line_normal.at<double>(1,0) << "x + " << this->line_normal.at<double>(0,0);
-		Debug(debug_msg.str());
-		debug_msg.clear(); debug_msg.str("");
-
-		debug_msg << "Tangent point: " << this->tangent_point << " [x, y]";
-		Debug(debug_msg.str());
-		debug_msg.clear(); debug_msg.str("");
-
-		debug_msg << "Robot point:   " << this->robot.coordinates << " [x, y]";
-		Debug(debug_msg.str());
-
-		Debug("Robot distance to center: " + to_string(this->robot.distance_to_center/10) + " cm");
-	}
-
-    return dohyo;
-}
-
-Mat sumo_edge::draw_dohyo_opponent(Mat input, Point2f coord, double slope){    
-    Mat output = input.clone();
-
-    if (this->success){
-	    Point2f opponent_point = this->calculate_opponent_position(coord);
-
-		Point2f corner[4];
-
-		corner[0] = opponent_point;
-		//circle(output, opponent_point, 20, (0, 0, 255), -1);
-
-	    double side_length_px = 100 / pix_to_mm;
-
-		double b = opponent_point.y - slope * opponent_point.x;
-	    double x = opponent_point.x + side_length_px / sqrt(1 + pow(slope,2));
-	    double y = x * slope + b;
-
-	    corner[1] = Point(x,y);
-	    //circle(frame, Point(x,y), 20, (0, 0, 255), -1);
-
-	    slope = -1/slope;
-	    b = opponent_point.y - slope * opponent_point.x;
-		x = opponent_point.x - side_length_px / sqrt(1 + pow(slope,2));
-	    y = x * slope + b;
-
-	    corner[2] = Point(x,y);
-	    //circle(frame, Point(x,y), 20, (0, 0, 255), -1);
-
-	    x = (corner[1].x - corner[0].x) + corner[2].x;
-	    y = (corner[1].y - corner[0].y) + corner[2].y;
-
-	    corner[3] = Point(x,y);
-	    //circle(frame, Point(x,y), 20, (0, 0, 255), -1);
-
-	    line( output, corner[0], corner[1], Scalar(255), 5, 1 );
-	    line( output, corner[0], corner[2], Scalar(255), 5, 1 );
-	    line( output, corner[3], corner[1], Scalar(255), 5, 1 );
-	    line( output, corner[3], corner[2], Scalar(255), 5, 1 );
-    }
-
-    return output;
-}
-
-Mat sumo_edge::draw_lines(Mat frame){
-	if (this->success){
-		vector<Point> line_tangent_points = this->get_line_points(frame, this->line_tangent);
-		polylines(frame, line_tangent_points, false, Scalar(255, 0, 0), 2, 8);
-
-		vector<Point> line_normal_points = this->get_line_points(frame, this->line_normal);
-		polylines(frame, line_normal_points, false, Scalar(255, 0, 0), 2, 8);
-
-	    circle(frame, this->tangent_point, 5, (0, 0, 255), -1);
-	}
-
-	return frame;
-}
-
-Mat sumo_edge::draw_lines_opponent(Mat frame, Point2f coord, double slope){
-	Point2f corner[4];
-
-	corner[0] = this->homography_calc_inverse(coord);
-	//circle(frame, this->homography_calc_inverse(coord), 5, (0, 0, 255), -1);
-
-    double side_length_px = 100 / pix_to_mm;
-
-	double b = coord.y - slope * coord.x;
-    double x = coord.x + side_length_px / sqrt(1 + pow(slope,2));
-    double y = x * slope + b;
-
-    corner[1] = this->homography_calc_inverse(Point(x,y));
-    //circle(frame, this->homography_calc_inverse(Point(x,y)), 5, (0, 0, 255), -1);
-
-    slope = -1/slope;
-    b = coord.y - slope * coord.x;
-	x = coord.x - side_length_px / sqrt(1 + pow(slope,2));
-    y = x * slope + b;
-
-    corner[2] = this->homography_calc_inverse(Point(x,y));
-    //circle(frame, this->homography_calc_inverse(Point(x,y)), 5, (0, 0, 255), -1);
-
-    line( frame, corner[0], corner[1], Scalar(255), 2, 1 );
-    line( frame, corner[0], corner[2], Scalar(255), 2, 1 );
-
-	return frame;
 }
