@@ -13,5 +13,7 @@ using namespace std;
 
 void run();
 
-void draw_dohyo(Point2f);
+void draw_robot_in_dohyo(Mat, Point2f);
 vector<Point> get_fov_line_points(Mat, Point2f, double);
+
+void draw_opponent_in_dohyo(Mat, Point2f, double);
