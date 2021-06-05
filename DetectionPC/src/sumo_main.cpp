@@ -1,6 +1,7 @@
 #include "../inc/sumo_main.hpp"
 #include "sumo_edge.cpp"
 #include "sumo_opponent.cpp"
+#include "communications.cpp"
 
 sumo_main::sumo_main(){}
 
@@ -22,9 +23,30 @@ void sumo_main::run(Mat image){
 	this->opponent_success = opponent_detection.find_opponent_position(frame);
 	Point2f opp_coord = opponent_detection.get_opponent_position();
 	opponent_position = edge_detection.translate_opponent_position(opp_coord);
+	opponent_angle    = atan(-1/opponent_detection.get_front_slope());
+
+
+	// Prepare message
+	if (this->robot_success || this->opponent_success){
+		stringstream stream;
+
+		if (this->robot_success){
+			stream << fixed << std::setprecision(2) 
+				   << "RX" << robot_position.x << "RY" << robot_position.y;
+		}
+		if (this->opponent_success){
+			stream << fixed << std::setprecision(2) 
+				   << "OX" << opponent_position.x << "OY" << opponent_position.y 
+			   	   << "OA" << opponent_angle;
+		}
+
+		string message = stream.str();
+		this->comms.send_uart(message);
+	}
+
 
 	//imshow("Dohyo isolated", frame);
-	//debug(image);
+	debug(image);
 }
 
 

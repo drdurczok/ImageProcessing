@@ -4,6 +4,7 @@
 #include "image_processing.hpp"
 #include "sumo_edge.hpp"
 #include "sumo_opponent.hpp"
+#include "communications.hpp"
 
 using namespace std;
 using namespace cv;
@@ -18,12 +19,14 @@ class sumo_main : private image_processing {
   private:
 	sumo_edge     	 edge_detection;
 	sumo_opponent 	 opponent_detection;
+	communications 	 comms;
 
 	bool robot_success;
 	bool opponent_success;
 
 	Point2f robot_position;
 	Point2f opponent_position;
+	double  opponent_angle;
 
 	/*______________________VISUAL___________________________*/
 	void debug(Mat);

@@ -6,14 +6,12 @@
 
 #include "image_capture.cpp"
 #include "sumo_main.cpp"
-#include "communications.cpp"
 
 using namespace cv;
 using namespace std;
 
 image_capture camera;
 sumo_main sumo;
-communications comms;
 
 void run(){
 	while(true){
@@ -21,7 +19,6 @@ void run(){
 
 		Mat image = camera.take_image();
     	sumo.run(image);
-    	comms.send_uart();
 	}
 }
 

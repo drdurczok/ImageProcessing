@@ -9,15 +9,17 @@
 
 using namespace std;
 
-#define CERR(x)  cout << "ERROR: " << x << endl;
+#define CERR(x)      cout << "ERROR: " << x << endl;
 
 #ifdef DEBUG
-#define Debug(x) cout << "INFO: " << x << endl;
-#define CWARN(x) cout << "WARNING: " << x << endl;
+#define Debug(x)     cout << "INFO: " << x << endl;
+#define CWARN(x)     cout << "WARNING: " << x << endl;
+#define UART_LOG(x)  cout << "UART OUT: " << x << endl;
 #define BREAK_LINE() cout << "=============================================" << endl;
 #else
 #define Debug(x) 
 #define CWARN(x)
+#define UART_LOG(x)
 #define BREAK_LINE()
 #endif 
 

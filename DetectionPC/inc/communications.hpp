@@ -18,11 +18,18 @@ extern string architecture;
 class communications {
   public:
     communications();
-    void send_uart();
+    ~communications();
+    void send_uart(string);
+    void read_uart();
 
   private:
     int serial_port;
+    string path;
+    ofstream file;
 
+	char read_buf [256]; // Allocate memory for read buffer, set size according to your needs
+
+	void save_to_file(string, int);
 };
 
 #endif

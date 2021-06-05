@@ -8,9 +8,34 @@ communications::communications(){
         CERR("Error " + to_string(errno) + " from open, " + strerror(errno));
     }
 
+    this->path = "../results/UART_FEED.txt";
+    this->file.open(this->path);
 }
 
-void communications::send_uart(){
-	unsigned char msg[] = { 'H', 'e', 'l', 'l', 'o', '\r' };
-	write(this->serial_port, msg, sizeof(msg));
+communications::~communications(){
+	close(this->serial_port);
+	this->file.close();
+}
+
+void communications::send_uart(string message){
+	int len = message.length();
+    char message_array[len + 1];
+    strcpy(message_array, message.c_str());
+
+    UART_LOG(message_array);
+    this->save_to_file(message_array, len);
+
+	write(this->serial_port, message_array, sizeof(message_array));
+}
+
+void communications::read_uart(){
+	// n is the number of bytes read. n may be 0 if no bytes were received, and can also be negative to signal an error.
+	int n = read(this->serial_port, &this->read_buf, sizeof(this->read_buf));
+}
+
+void communications::save_to_file(string message_array, int len){
+	for ( uint i = 0; i < len; i++){
+		this->file << message_array[i];
+	}
+	this->file << "\n";
 }
