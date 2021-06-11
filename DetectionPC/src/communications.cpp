@@ -1,21 +1,24 @@
 #include "../inc/communications.hpp"
 
 communications::communications(){
+	string uart_path;
     if(architecture == "ARM"){
-	    Debug("Changing UART device to /dev/ttyS1.");
-	    this->serial_port = open("/dev/ttyS1", O_RDWR);
+    	uart_path = "/dev/ttyS1";
 	}
     else{
-    	this->serial_port = open("/dev/ttyUSB0", O_RDWR);
+    	uart_path = "/dev/ttyUSB0";
     }
+    Debug("Using UART device " + uart_path);
+    cout << "Using UART device " << uart_path << endl;
+   	this->serial_port = open(uart_path, O_RDWR);
 
     // Check for errors
     if (this->serial_port < 0) {
         CERR("Error " + to_string(errno) + " from open, " + strerror(errno));
     }
     else{
-    	set_interface_attribs(this->serial_port, B115200, 0);  // set speed to 115,200 bps, 8n1 (no parity)
-		set_blocking(this->serial_port, 0);               	 // set no blocking
+    	set_interface_attribs(this->serial_port, B115200, 0);	// set speed to 115,200 bps, 8n1 (no parity)
+		set_blocking(this->serial_port, 0);                		// set no blocking
 	}
 
     this->path = "../results/UART_FEED.txt";
