@@ -29,8 +29,10 @@ void communications::send_uart(string message){
     strcpy(message_array, message.c_str());
     cout << "Out: " << message << endl;
     UART_LOG(message_array);
-    this->save_to_file("Out: ", 7);
-    this->save_to_file(message_array, len);
+
+    this->save_to_file("Out: ");
+    this->save_to_file(message_array);
+    this->save_to_file("\n");
 
 	write(this->serial_port, message_array, sizeof(message_array));
 
@@ -40,14 +42,14 @@ void communications::send_uart(string message){
 void communications::read_uart(){
 	// n is the number of bytes read. n may be 0 if no bytes were received, and can also be negative to signal an error.
 	int n = read(this->serial_port, &this->read_buf, sizeof(this->read_buf));
-        cout << "In: " << endl;
-	this->save_to_file("In:  ", 7);
-	this->save_to_file(this->read_buf, sizeof(this->read_buf));
+    cout << "In: " << endl;
+
+    this->save_to_file("In:  ");
+	this->save_to_file(this->read_buf);
+	this->save_to_file("\n");
 }
 
-void communications::save_to_file(string message_array, int len){
-	for ( uint i = 0; i < len; i++){
-		this->file << message_array[i];
-	}
-	this->file << "\n";
+void communications::save_to_file(string message_array){
+	this->file << message_array;
+	//this->file << "\n";
 }

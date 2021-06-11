@@ -45,10 +45,6 @@ void sumo_main::run(Mat image){
 	}
 	*/
 	this->comms.send_uart("message");
-	
-	for (int i = 0; i < 9999999; i++){
-		cout << "";
-	}
 
 	#ifdef BENCHMARK
 	//imshow("Dohyo isolated", frame);

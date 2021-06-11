@@ -13,12 +13,21 @@ using namespace std;
 image_capture camera;
 sumo_main sumo;
 
+int iterations = 0;
+
 void run(){
 	while(true){
 		BREAK_LINE();
 
 		Mat image = camera.take_image();
     	sumo.run(image);
+
+
+		for (int i = 0; i < 9999999; i++){}
+		iterations++;
+		if (iterations > 5){
+			break;
+		}
 	}
 }
 
@@ -44,13 +53,12 @@ int main(){
 
 	#if   defined(BENCHMARK)
 	benchmark();
+	waitKey(0);
 	#elif defined(CALIBRATION)
 	calibration();
 	#else
 	run();
 	#endif
-
- 	waitKey(0);
 
     return 0;
 }
