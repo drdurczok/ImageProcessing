@@ -42,10 +42,16 @@ void communications::send_uart(string message){
 void communications::read_uart(){
 	// n is the number of bytes read. n may be 0 if no bytes were received, and can also be negative to signal an error.
 	int n = read(this->serial_port, &this->read_buf, sizeof(this->read_buf));
-    cout << "In: " << endl;
+
+	string buff = "";
+    for (uint i = 0; i < 50; i++) {
+        buff = buff + this->read_buf[i];
+    }
+
+    cout << "In: " << buff << endl;
 
     this->save_to_file("In:  ");
-	this->save_to_file(this->read_buf);
+	this->save_to_file(buff);
 	this->save_to_file("\n");
 }
 
