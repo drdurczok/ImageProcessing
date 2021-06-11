@@ -1,12 +1,6 @@
 Out: message
-In:  i
 Out: message
-In:  i
 Out: message
-In:  i
 Out: message
-In:  i
 Out: message
-In:  i
 Out: message
-In:  i
