@@ -1,4 +1,4 @@
-#define BENCHMARK
+//#define BENCHMARK
 //#define CALIBRATION
 
 #include <opencv2/highgui.hpp>
