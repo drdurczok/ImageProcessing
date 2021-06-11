@@ -27,18 +27,20 @@ void communications::send_uart(string message){
 	int len = message.length();
     char message_array[len + 1];
     strcpy(message_array, message.c_str());
-
+    cout << "Out: " << message << endl;
     UART_LOG(message_array);
     this->save_to_file("Out: ", 7);
     this->save_to_file(message_array, len);
 
 	write(this->serial_port, message_array, sizeof(message_array));
+
+    this->read_uart();
 }
 
 void communications::read_uart(){
 	// n is the number of bytes read. n may be 0 if no bytes were received, and can also be negative to signal an error.
 	int n = read(this->serial_port, &this->read_buf, sizeof(this->read_buf));
-
+        cout << "In: " << endl;
 	this->save_to_file("In:  ", 7);
 	this->save_to_file(this->read_buf, sizeof(this->read_buf));
 }
