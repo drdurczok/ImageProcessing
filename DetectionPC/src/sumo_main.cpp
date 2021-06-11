@@ -3,7 +3,9 @@
 #include "sumo_opponent.cpp"
 #include "communications.cpp"
 
-sumo_main::sumo_main(){}
+sumo_main::sumo_main(){
+	timestamp_start  = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
 
 void sumo_main::run(Mat image){
 	// Edge detection
@@ -25,10 +27,12 @@ void sumo_main::run(Mat image){
 	opponent_position = edge_detection.translate_opponent_position(opp_coord);
 	opponent_angle    = atan(-1/opponent_detection.get_front_slope());
 
-
 	// Prepare message
 	if (this->robot_success || this->opponent_success){
 		stringstream stream;
+
+		auto timestamp  = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - timestamp_start;
+		stream << "T" << timestamp;
 
 		if (this->robot_success){
 			stream << fixed << std::setprecision(2) 
@@ -42,11 +46,15 @@ void sumo_main::run(Mat image){
 
 		string message = stream.str();
 		this->comms.send_uart(message);
+		cout << message << endl;
 	}
+	
+	this->comms.read_uart();
 
-
+	#ifdef BENCHMARK
 	//imshow("Dohyo isolated", frame);
 	debug(image);
+	#endif
 }
 
 
@@ -61,6 +69,7 @@ void sumo_main::debug(Mat image){
 
 	if (opponent_detection.is_opponent_found()){
 		Point2f opp  = opponent_detection.get_opponent_position();
+		opp = edge_detection.translate_opponent_position(opp);
 		double slope = opponent_detection.get_front_slope();
 
 		lines = this->draw_lines_opponent(lines, opp, slope);
@@ -126,12 +135,10 @@ Mat sumo_main::draw_dohyo(){
     return dohyo;
 }
 
-Mat sumo_main::draw_dohyo_opponent(Mat input, Point2f coord, double slope){    
+Mat sumo_main::draw_dohyo_opponent(Mat input, Point2f opponent_point, double slope){    
     Mat output = input.clone();
 
     if (this->opponent_success){
-	    Point2f opponent_point = edge_detection.translate_opponent_position(coord);
-
 		Point2f corner[4];
 
 		corner[0] = opponent_point;

@@ -1,6 +1,11 @@
 #ifndef SUMO_MAIN_H
 #define SUMO_MAIN_H
 
+#include <chrono>
+using std::chrono::duration_cast;
+using std::chrono::system_clock;
+using std::chrono::milliseconds;
+
 #include "image_processing.hpp"
 #include "sumo_edge.hpp"
 #include "sumo_opponent.hpp"
@@ -28,6 +33,8 @@ class sumo_main : private image_processing {
 	Point2f opponent_position;
 	double  opponent_angle;
 
+	long int timestamp_start;
+	
 	/*______________________VISUAL___________________________*/
 	void debug(Mat);
 	Mat draw_dohyo();

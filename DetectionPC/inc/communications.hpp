@@ -29,7 +29,12 @@ class communications {
 
 	char read_buf [256]; // Allocate memory for read buffer, set size according to your needs
 
-	void save_to_file(string, int);
+	void save_to_file(string);
+
+
+  /*______________________UART CONFIG___________________________*/
+  int set_interface_attribs(int, int, int);
+  void set_blocking(int, int);
 };
 
 #endif
