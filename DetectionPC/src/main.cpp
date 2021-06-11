@@ -10,12 +10,12 @@
 using namespace cv;
 using namespace std;
 
-image_capture camera;
-sumo_main sumo;
-
 int iterations = 0;
 
 void run(){
+	image_capture camera;
+	sumo_main sumo;
+
 	while(true){
 		BREAK_LINE();
 
@@ -66,6 +66,8 @@ int main(){
 
 
 #ifdef BENCHMARK
+image_capture camera;
+sumo_main sumo;
 
 Mat image;
 uint num_of_runs = 1260;	//In the case of prepared samples, must be equal or less than the number of samples
@@ -81,13 +83,9 @@ void algorithms_on_samples(uint i){
 	sumo.run(image);
 }
 
-void image_capture(){
-	image = camera.take_image();
-}
-
 void benchmark(){
 	// Take first image and give time for hardware to initialize
-	image_capture();
+	image = camera.take_image();
 	for (int j = 0; j<1000000; j++){}
 
 	auto t_start  = high_resolution_clock::now();
@@ -100,7 +98,7 @@ void benchmark(){
 		t_start = high_resolution_clock::now();
 
 		// ADD METHODS TO BE BENCHMARKED
-		//image_capture();
+		//image = camera.take_image();
 		algorithms_on_samples(i);
 
 		t_end = high_resolution_clock::now();
@@ -140,6 +138,8 @@ void benchmark(){
 #endif
 
 void calibration(){
+	image_capture camera;
+
 	while(true){
 		camera.take_image();
 		camera.save_image();
