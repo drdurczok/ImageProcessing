@@ -21,13 +21,6 @@ void run(){
 
 		Mat image = camera.take_image();
     	sumo.run(image);
-
-
-		for (int i = 0; i < 9999999; i++){}
-		iterations++;
-		if (iterations > 5){
-			break;
-		}
 	}
 }
 

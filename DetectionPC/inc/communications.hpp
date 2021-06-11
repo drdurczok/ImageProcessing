@@ -32,6 +32,7 @@ class communications {
 	void save_to_file(string);
 
 
+  /*______________________UART CONFIG___________________________*/
   int set_interface_attribs(int, int, int);
   void set_blocking(int, int);
 };

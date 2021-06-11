@@ -3,10 +3,11 @@
 #include "sumo_opponent.cpp"
 #include "communications.cpp"
 
-sumo_main::sumo_main(){}
+sumo_main::sumo_main(){
+	timestamp_start  = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
 
 void sumo_main::run(Mat image){
-	/*
 	// Edge detection
 	Mat image_gray;
 	this->prepare_image(image, image_gray);
@@ -30,6 +31,9 @@ void sumo_main::run(Mat image){
 	if (this->robot_success || this->opponent_success){
 		stringstream stream;
 
+		auto timestamp  = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - timestamp_start;
+		stream << "T" << timestamp;
+
 		if (this->robot_success){
 			stream << fixed << std::setprecision(2) 
 				   << "RX" << robot_position.x << "RY" << robot_position.y;
@@ -42,9 +46,10 @@ void sumo_main::run(Mat image){
 
 		string message = stream.str();
 		this->comms.send_uart(message);
+		cout << message << endl;
 	}
-	*/
-	this->comms.send_uart("message");
+	
+	this->comms.read_uart();
 
 	#ifdef BENCHMARK
 	//imshow("Dohyo isolated", frame);
