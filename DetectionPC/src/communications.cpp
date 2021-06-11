@@ -10,7 +10,7 @@ communications::communications(){
     }
     Debug("Using UART device " + uart_path);
     cout << "Using UART device " << uart_path << endl;
-   	this->serial_port = open(uart_path, O_RDWR);
+   	this->serial_port = open(uart_path.c_str(), O_RDWR);
 
     // Check for errors
     if (this->serial_port < 0) {
