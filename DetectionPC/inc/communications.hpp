@@ -10,7 +10,14 @@
 #include <errno.h>   // Error integer and strerror() function
 #include <termios.h> // Contains POSIX terminal control definitions
 #include <unistd.h>  // write(), read(), close()
-#include <filesystem>
+
+#if defined ARM
+  #include <experimental/filesystem>
+  namespace fs = std::experimental::filesystem;
+#else
+  #include <filesystem>
+  namespace fs = std::filesystem;
+#endif
 
 using namespace std;
 

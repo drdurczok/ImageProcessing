@@ -1,5 +1,6 @@
 //#define BENCHMARK
 //#define CALIBRATION
+#define ARM
 
 #include <opencv2/highgui.hpp>
 #include "sys.cpp"
