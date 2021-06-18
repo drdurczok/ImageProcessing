@@ -21,7 +21,7 @@ class communications {
     communications();
     ~communications();
     void send_uart(string);
-    void read_uart();
+    void read_uart(string);
 
   private:
     int serial_port;

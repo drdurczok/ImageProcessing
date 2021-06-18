@@ -29,11 +29,11 @@ void sumo_main::run(Mat image){
 	opponent_dist     = opponent_detection.distance_to_opponent();
 	opponent_angle_relative =  opponent_detection.angle_to_opponent();
 
+	auto timestamp  = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - timestamp_start;
 	// Prepare message
 	if (this->robot_success || this->opponent_success){
 		stringstream stream;
 
-		auto timestamp  = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - timestamp_start;
 		stream << "T" << timestamp;
 
 		if (this->robot_success){
@@ -52,7 +52,7 @@ void sumo_main::run(Mat image){
 		this->comms.send_uart(message);
 	}
 	
-	this->comms.read_uart();
+	this->comms.read_uart(to_string(timestamp));
 
 	#ifdef BENCHMARK
 	//imshow("Dohyo isolated", frame);

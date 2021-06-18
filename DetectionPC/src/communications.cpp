@@ -57,7 +57,7 @@ void communications::send_uart(string message){
 	usleep((len + 25) * 100); 
 }
 
-void communications::read_uart(){
+void communications::read_uart(string timestamp){
 	// n is the number of bytes read. n may be 0 if no bytes were received, and can also be negative to signal an error.
 	int n = read(this->serial_port, &this->read_buf, sizeof(this->read_buf));
 
@@ -72,7 +72,8 @@ void communications::read_uart(){
 
 	    Debug("UART RX: " + buff)
 
-	    this->save_to_file("RX:  ");
+	    this->save_to_file("RXT");
+	    this->save_to_file(timestamp);
 		this->save_to_file(buff);
 		this->save_to_file("\n");
 	}
