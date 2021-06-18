@@ -50,7 +50,6 @@ void sumo_main::run(Mat image){
 
 		string message = stream.str();
 		this->comms.send_uart(message);
-		cout << message << endl;
 	}
 	
 	this->comms.read_uart();

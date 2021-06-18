@@ -21,7 +21,18 @@ communications::communications(){
 		set_blocking(this->serial_port, 0);                		// set no blocking
 	}
 
-    this->path = "../results/UART_FEED.txt";
+
+	// Find number of uart files
+	string uart_filepath = "../results/UART_FEED/";
+	auto dirIter = std::filesystem::directory_iterator(uart_filepath);
+
+	int fileCount = std::count_if(
+	    begin(dirIter),
+	    end(dirIter),
+	    [](auto& entry) { return entry.is_regular_file(); }
+	) + 1;
+
+    this->path = uart_filepath + to_string(fileCount) + ".txt";
     this->file.open(this->path);
 }
 

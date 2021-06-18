@@ -30,10 +30,14 @@ void run(){
     	sumo.run(image);
 
     	ms_double = high_resolution_clock::now() - t_start;
-    	if(ms_double.count() > 120000){
+
+    	//Finish after one minute
+    	if(ms_double.count() > 60000){
     		break;
     	}
 	}
+
+	cout << "EXITING PROCESS" << endl;
 }
 
 
