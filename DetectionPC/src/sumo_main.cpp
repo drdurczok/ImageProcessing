@@ -26,6 +26,8 @@ void sumo_main::run(Mat image){
 	Point2f opp_coord = opponent_detection.get_opponent_position();
 	opponent_position = edge_detection.translate_opponent_position(opp_coord);
 	opponent_angle    = atan(-1/opponent_detection.get_front_slope());
+	opponent_dist     = opponent_detection.distance_to_opponent();
+	opponent_angle_relative =  opponent_detection.angle_to_opponent();
 
 	// Prepare message
 	if (this->robot_success || this->opponent_success){
@@ -41,7 +43,9 @@ void sumo_main::run(Mat image){
 		if (this->opponent_success){
 			stream << fixed << std::setprecision(2) 
 				   << "OX" << opponent_position.x << "OY" << opponent_position.y 
-			   	   << "OA" << opponent_angle;
+			   	   << "OA" << opponent_angle
+			   	   << "OD" << opponent_dist
+			   	   << "OS" << opponent_angle_relative;
 		}
 
 		string message = stream.str();

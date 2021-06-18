@@ -12,15 +12,27 @@ using namespace std;
 
 int iterations = 0;
 
+#include <chrono>
+using std::chrono::high_resolution_clock;
+using std::chrono::duration;
+
 void run(){
 	image_capture camera;
 	sumo_main sumo;
+
+	auto t_start  = high_resolution_clock::now();
+	duration<double, std::milli> ms_double;
 
 	while(true){
 		BREAK_LINE();
 
 		Mat image = camera.take_image();
     	sumo.run(image);
+
+    	ms_double = high_resolution_clock::now() - t_start;
+    	if(ms_double.count() > 120000){
+    		break;
+    	}
 	}
 }
 
@@ -46,7 +58,6 @@ int main(){
 
 	#if   defined(BENCHMARK)
 	benchmark();
-	waitKey(0);
 	#elif defined(CALIBRATION)
 	calibration();
 	#else
@@ -60,26 +71,17 @@ int main(){
 
 #ifdef BENCHMARK
 image_capture camera;
-sumo_main sumo;
 
 Mat image;
 uint num_of_runs = 1260;	//In the case of prepared samples, must be equal or less than the number of samples
 String path_to_image;
 
-void algorithms_on_samples(uint i){
-	path_to_image = "../samples/saved_ring/" + to_string(i) + ".jpg";
-
-	image = imread(path_to_image, IMREAD_COLOR);
-    if( image.empty() ){
-        cout << "Could not open or find the image" << endl;
-    }
-	sumo.run(image);
-}
-
 void benchmark(){
+	sumo_main sumo;
+
 	// Take first image and give time for hardware to initialize
-	image = camera.take_image();
-	for (int j = 0; j<1000000; j++){}
+	//image = camera.take_image();
+	//for (int j = 0; j<1000000; j++){}
 
 	auto t_start  = high_resolution_clock::now();
 	auto t_end  = high_resolution_clock::now();
@@ -90,9 +92,17 @@ void benchmark(){
 	for(uint i = 1; i <= num_of_runs; i++){
 		t_start = high_resolution_clock::now();
 
+		/*_________START CORE__________*/
 		// ADD METHODS TO BE BENCHMARKED
 		//image = camera.take_image();
-		algorithms_on_samples(i);
+		path_to_image = "../samples/saved_ring/" + to_string(i) + ".jpg";
+
+		image = imread(path_to_image, IMREAD_COLOR);
+	    if( image.empty() ){
+	        cout << "Could not open or find the image" << endl;
+	    }
+		sumo.run(image);
+		/*_________END CORE__________*/
 
 		t_end = high_resolution_clock::now();
 

@@ -29,9 +29,11 @@ class sumo_main : private image_processing {
 	bool robot_success;
 	bool opponent_success;
 
-	Point2f robot_position;
-	Point2f opponent_position;
-	double  opponent_angle;
+	Point2f  robot_position;
+	Point2f  opponent_position;
+	double   opponent_angle;
+	uint16_t opponent_dist;
+	double   opponent_angle_relative;
 
 	long int timestamp_start;
 	

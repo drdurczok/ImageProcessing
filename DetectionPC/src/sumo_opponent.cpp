@@ -98,6 +98,25 @@ bool sumo_opponent::is_opponent_found(){
     return this->success;
 }
 
+uint16_t sumo_opponent::distance_to_opponent(){
+    uint16_t dist = 0;
+    if (this->success){
+        Point2f robot_point = get_camera_coordinates();
+        dist = sqrt(pow((robot_point.x - this->robot.coordinates.x),2) + pow((robot_point.y - this->robot.coordinates.y),2))*this->pix_to_mm;
+    }
+    return dist;
+}
+
+double sumo_opponent::angle_to_opponent(){
+    double angle = 0;
+    if (this->success){
+        Point2f robot_point = get_camera_coordinates();
+        double slope_line = (robot_point.x - this->robot.coordinates.x)/(robot_point.y - this->robot.coordinates.y);
+        angle = (PI/2 - atan(slope_line))*180/PI;
+    }
+    return angle;
+}
+
 Mat sumo_opponent::floor_pixels(Mat input){
     cvtColor(input, input, COLOR_RGB2GRAY);
 

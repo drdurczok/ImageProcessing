@@ -3,7 +3,6 @@
 
 #include "image_processing.hpp"
 
-
 using namespace std;
 using namespace cv;
 
@@ -20,6 +19,9 @@ class sumo_opponent : private image_processing {
   	Point2f get_opponent_position();
   	double  get_front_slope();
   	bool is_opponent_found();
+
+    uint16_t distance_to_opponent();
+    double  angle_to_opponent();
 
   private:
   	struct position {
